@@ -1,6 +1,6 @@
 import hashlib
 
-file_name = "mots.txt"
+file_name = "liste.txt"
 #exmple de hachage on metre se que on veut pour que le prof verifie 
 #original_md5 = input("Entrez le mot de passe haché (MD5): ")
 original_md5 = 'ec0e2603172c73a8b644bb9456c1ff6e'  # batman
