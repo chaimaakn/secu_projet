@@ -4,7 +4,7 @@ import hashlib
 password_dict={}
 
 
-with open('C:\\Users\\meriem\\Downloads\\liste.txt', 'r') as file:
+with open('liste.txt', 'r') as file:
     
     for line in file:
         
