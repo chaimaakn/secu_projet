@@ -25,7 +25,6 @@ def trouver_bon_mot():
         for prefixe in itertools.product(CARACTERES, repeat=longueur-1):
             for dernierCaractere in CARACTERES:
                 mot = ''.join(prefixe) + dernierCaractere
-                print(f"Essai de : {mot}")
                 if est_bon_mot(mot):
                     end_time = time.time() # Enregistrer le temps de fin
                     temps_ecoule = end_time - start_time
