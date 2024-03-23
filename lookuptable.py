@@ -8,7 +8,7 @@ pwhash=hashlib.md5(pw.encode()).hexdigest()
 
 print(pwhash)
 
-with open('C:\\Users\\meriem\\Desktop\\python\\sec project\\password_dict.pkl', 'rb') as fp:
+with open('password_dict.pkl', 'rb') as fp:
     password_dic = pickle.load(fp)
 
 
