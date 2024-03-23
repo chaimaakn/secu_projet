@@ -9,7 +9,7 @@ pwhash=hashlib.md5(pw.encode()).hexdigest()
 print(pwhash)
 
 #we open the pickle file and it returns to its original form as a dictionnary
-with open('password_dict.pkl', 'rb') as fp:
+with open("password_dict.pkl", 'rb') as fp:
     password_dic = pickle.load(fp)
 
 #we look for the hash in the dictionnary
