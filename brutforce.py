@@ -38,3 +38,4 @@ if bon_mot:
     print(f"Temps écoulé pour trouver le mot: {temps_ecoule:.6f} secondes")
 else:
     print("Aucun mot n'a été trouvé.")
+    
