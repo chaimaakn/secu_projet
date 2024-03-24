@@ -12,7 +12,7 @@ def md5(mot):
     return hashlib.md5(mot.encode()).hexdigest()
 
 # Hachage MD5 du mot à trouver
-HASH_MOT_A_TROUVER = '5a105e8b9d40e1329780d62ea2265d8a'  # bat
+HASH_MOT_A_TROUVER = 'ec0e2603172c73a8b644bb9456c1ff6e'  # bat
 
 # Fonction pour tester si un mot correspond au hachage
 def est_bon_mot(mot):
