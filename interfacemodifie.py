@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import ttk, messagebox, font
 from tqdm import tqdm
@@ -184,3 +185,4 @@ style.theme_use("default")
 style.configure("Custom.Horizontal.TProgressbar", troughcolor=BG_COLOR, bordercolor=PROGRESS_COLOR, background=PROGRESS_COLOR, borderwidth=2)
 
 root.mainloop()
+
