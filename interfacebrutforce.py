@@ -64,7 +64,7 @@ root.title("Retrouver le mot de passe à partir d'un hash MD5")
 root.configure(bg="#1E1E1E")  # Fond de fenêtre sombre
 
 # Création des widgets
-custom_font = font.Font(family="Helvetica", size=14, weight="bold")
+custom_font = font.Font(family="Courier", size=14, weight="bold")
 password_label = tk.Label(root, text="Entrez le hash MD5 :", font=custom_font, bg="#1E1E1E", fg="white")
 password_entry = tk.Entry(root, width=50, font=custom_font, bg="black", fg="white")  # Barre de saisie noire
 submit_button = tk.Button(root, text="Rechercher", command=recuperer_hash, font=custom_font, bg="#008000", fg="white", width=10)  # Bouton vert
