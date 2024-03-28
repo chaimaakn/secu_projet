@@ -18,6 +18,9 @@ BUTTON_ACTIVE_COLOR = "#004400"  # Couleur des boutons lorsqu'ils sont actifs
 FONT_FAMILY = "Courier"
 FONT_SIZE = 12
 
+# Frame actuellement affichée
+current_frame = None
+
 # Fonction pour faire clignoter les points
 def blink_dots(label, delay=500):
     def show_dots(dots):
@@ -28,6 +31,7 @@ def blink_dots(label, delay=500):
 
 # Fonction pour afficher l'interface de l'attaque par dictionnaire
 def show_dictionary_attack():
+    global current_frame
     # Masquer les boutons principaux
     attack_buttons_frame.place_forget()
 
@@ -35,9 +39,11 @@ def show_dictionary_attack():
     label_hashed_password.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
     entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')  # Centrer en hauteur
     crack_button.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
+    current_frame = label_hashed_password
 
 # Fonction pour cracker le mot de passe
 def crack_password():
+    global current_frame
     hashed_password = entry_hashed_password.get().strip()
     if not hashed_password:
         messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
@@ -54,9 +60,10 @@ def crack_password():
 
     progress_bar.config(maximum=100)
     progress_bar.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
-    percentage_label.place(relx=0.5, rely=0.3, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
+    percentage_label.place(relx=0.5, rely=0.28, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
     blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
     blink_dots(blink_label)  # Démarrer le clignotement des points
+    current_frame = progress_bar
 
     for progress in tqdm(range(101), desc="Chercher...", unit="%", leave=False):
         progress_bar.step(1)
@@ -75,14 +82,17 @@ def crack_password():
             result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
             password_label.config(text=word, fg=ACCENT_COLOR)
             result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+            current_frame = result_frame
             return
 
     result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
     password_label.config(text="")
     result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+    current_frame = result_frame
 
 # Fonction pour réinitialiser l'interface
 def retry():
+    global current_frame
     # Cacher les éléments de la tentative précédente
     result_frame.place_forget()
     result_label.config(text="")
@@ -96,6 +106,16 @@ def get_current_datetime():
     now = datetime.now()
     date_time = now.strftime("%d/%m/%Y %H:%M:%S")
     return date_time
+
+# Fonction pour retourner à l'écran précédent
+def return_to_previous_screen():
+    global current_frame
+    if current_frame == result_frame:
+        retry()
+    elif current_frame == progress_bar:
+        show_dictionary_attack()
+    elif current_frame in (attack_buttons_frame, label_hashed_password, entry_hashed_password, crack_button):
+        pass  # Ne rien faire car c'est la première fenêtre
 
 # Configuration de la fenêtre principale
 root = tk.Tk()
@@ -166,7 +186,7 @@ date_label = tk.Label(root, text=get_current_datetime(), fg="#00FF00", bg=BG_COL
 date_label.place(relx=1.0, rely=0, anchor='ne')
 
 # Bouton "Retour" en bas à gauche
-back_button = Button(root, text="Retour", command=root.destroy, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+back_button = Button(root, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
 # Style personnalisé pour la barre de progression
