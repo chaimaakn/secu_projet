@@ -3,12 +3,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox, font
 from tqdm import tqdm
 import time
+from tkmacosx import Button
 
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
 ACCENT_COLOR = "#ff0000"
 PROGRESS_COLOR = "#00ff00"
+BUTTON_COLOR = "#000000"  # Couleur des boutons
 
 # Police de caractères
 FONT_FAMILY = "Courier"
@@ -108,7 +110,7 @@ percentage_label = tk.Label(root, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
 blink_label = tk.Label(root, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
 
 # Bouton pour cracker le mot de passe
-crack_button = tk.Button(root, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+crack_button = Button(root, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 crack_button.pack(pady=10)
 
 # Frame pour afficher le résultat et le bouton "Nouvelle tentative"
@@ -117,7 +119,7 @@ result_label = tk.Label(result_frame, bg=BG_COLOR, font=custom_font, fg=FG_COLOR
 result_label.pack(side=tk.LEFT, padx=10)
 password_label = tk.Label(result_frame, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
 password_label.pack(side=tk.LEFT)
-retry_button = tk.Button(result_frame, text="Nouvelle tentative", command=retry, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+retry_button = Button(result_frame, text="Nouvelle tentative", command=retry, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button.pack(side=tk.LEFT, padx=10)
 
 # Style personnalisé pour la barre de progression
