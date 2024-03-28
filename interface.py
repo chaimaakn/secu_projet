@@ -28,27 +28,83 @@ def blink_dots(label, delay=500):
         label.after(delay, show_dots, dots[1:] + dots[:1])
 
     show_dots("...")
+    
+# Variable pour stocker la valeur actuelle de la barre de progression
+current_progress = 0
+
+# Fonction pour afficher/cacher le bouton "Retour"
+def toggle_back_button(show):
+    if show:
+        back_button.place(relx=0, rely=1.0, anchor='sw')
+    else:
+        back_button.place_forget()
+
+# Fonction pour cacher toutes les frames
+def hide_all_frames():
+    attack_buttons_frame.place_forget()
+    label_hashed_password.place_forget()
+    entry_hashed_password.place_forget()
+    crack_button.place_forget()
+    progress_bar.place_forget()
+    percentage_label.place_forget()
+    blink_label.place_forget()
+    result_frame.place_forget()
+        
+# Fonction pour cacher la frame de saisie du mot de passe haché
+def hide_password_entry():
+    label_hashed_password.place_forget()
+    entry_hashed_password.place_forget()
+    crack_button.place_forget()
+# Fonction pour réinitialiser la barre de progression
+def reset_progress_bar():
+    global current_progress
+    current_progress = 0
+    progress_bar.config(value=current_progress)  # Réinitialiser la valeur de la barre de progression
+    percentage_label.config(text=f"{current_progress}%")  # Réinitialiser le label de pourcentage
 
 # Fonction pour afficher l'interface de l'attaque par dictionnaire
 def show_dictionary_attack():
     global current_frame
-    # Masquer les boutons principaux
-    attack_buttons_frame.place_forget()
+    hide_all_frames()  # Cacher toutes les frames
 
     # Afficher l'interface de l'attaque par dictionnaire
-    label_hashed_password.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
-    entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')  # Centrer en hauteur
-    crack_button.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
+    label_hashed_password.place(relx=0.5, rely=0.35, anchor='center')
+    entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
+    crack_button.place(relx=0.5, rely=0.5, anchor='center')
     current_frame = label_hashed_password
+    toggle_back_button(True)
+
+
+# Fonction pour retourner à l'écran précédent
+def return_to_previous_screen():
+    global current_frame
+    if current_frame == result_frame:
+        result_frame.place_forget()
+        show_dictionary_attack()
+    elif current_frame == progress_bar:
+        reset_progress_bar()
+        progress_bar.place_forget()
+        percentage_label.place_forget()
+        blink_label.place_forget()
+        show_dictionary_attack()
+    elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
+        hide_password_entry()
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = attack_buttons_frame
+        toggle_back_button(False)  # Cacher le bouton "Retour"
+    elif current_frame == attack_buttons_frame:
+        pass
 
 # Fonction pour cracker le mot de passe
 def crack_password():
-    global current_frame
+    global current_frame, current_progress
     hashed_password = entry_hashed_password.get().strip()
     if not hashed_password:
         messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
         return
 
+    hide_all_frames()  # Cacher toutes les frames
+   
     # Cacher tous les widgets sauf la barre de progression et le label clignotant
     label_hashed_password.place_forget()
     entry_hashed_password.place_forget()
@@ -64,14 +120,18 @@ def crack_password():
     blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
     blink_dots(blink_label)  # Démarrer le clignotement des points
     current_frame = progress_bar
+    toggle_back_button(True)
+
 
     for progress in tqdm(range(101), desc="Chercher...", unit="%", leave=False):
-        progress_bar.step(1)
-        percentage_label.config(text=f"{progress}%")
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        percentage_label.config(text=f"{current_progress}%")
         root.update()
         time.sleep(0.05)
 
-    progress_bar.stop()
+    reset_progress_bar()  # Réinitialiser la barre de progression après la boucle
+
     progress_bar.place_forget()  # Cacher la barre de progression
     percentage_label.place_forget()  # Cacher le label de pourcentage
     blink_label.place_forget()  # Cacher le label clignotant
@@ -83,12 +143,15 @@ def crack_password():
             password_label.config(text=word, fg=ACCENT_COLOR)
             result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
             current_frame = result_frame
+            toggle_back_button(False)
             return
 
     result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
     password_label.config(text="")
     result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
     current_frame = result_frame
+    toggle_back_button(False)
+    
 
 # Fonction pour réinitialiser l'interface
 def retry():
@@ -107,20 +170,12 @@ def get_current_datetime():
     date_time = now.strftime("%d/%m/%Y %H:%M:%S")
     return date_time
 
-# Fonction pour retourner à l'écran précédent
-def return_to_previous_screen():
-    global current_frame
-    if current_frame == result_frame:
-        retry()
-    elif current_frame == progress_bar:
-        show_dictionary_attack()
-    elif current_frame in (attack_buttons_frame, label_hashed_password, entry_hashed_password, crack_button):
-        pass  # Ne rien faire car c'est la première fenêtre
 
 # Configuration de la fenêtre principale
 root = tk.Tk()
 root.title("Attaque par dictionnaire")
 root.configure(bg=BG_COLOR)
+root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightthickness=0.5)
 root.geometry("500x400")  # Définir la taille de la fenêtre
 
 # Obtenir les dimensions de la fenêtre
@@ -193,5 +248,9 @@ back_button.place(relx=0, rely=1.0, anchor='sw')
 style = ttk.Style()
 style.theme_use("default")
 style.configure("Custom.Horizontal.TProgressbar", troughcolor=BG_COLOR, bordercolor=PROGRESS_COLOR, background=PROGRESS_COLOR, borderwidth=2)
+
+
+# Afficher le bouton "Retour" par défaut
+toggle_back_button(False)
 
 root.mainloop()
