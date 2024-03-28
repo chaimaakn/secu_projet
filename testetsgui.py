@@ -33,7 +33,7 @@ password_entry.configure(insertbackground="white")  # Changement de la couleur d
 
 # Création du bouton de soumission
 submit_font = font.Font(weight="bold")
-submit_button = tk.Button(main_frame, text="Soumettre", command=submit_password, bg="lightgreen", font=submit_font, width=10)
+submit_button = tk.Button(main_frame, text="Soumettre", command=submit_password, bg="green", font=submit_font, width=10)
 submit_button.grid(row=1, column=1, sticky="w", pady=10)
 
 # Étiquette pour afficher le résultat
