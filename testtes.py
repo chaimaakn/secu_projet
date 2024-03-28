@@ -89,6 +89,8 @@ root = tk.Tk()
 root.title("Attaque par dictionnaire")
 root.configure(bg=BG_COLOR)
 
+root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightthickness=0.5)
+
 # Police personnalisée
 custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 
@@ -97,7 +99,7 @@ label_hashed_password = tk.Label(root, text="Entrez le mot de passe haché (MD5)
 label_hashed_password.pack(pady=10)
 
 # Entrée pour le mot de passe haché
-entry_hashed_password = tk.Entry(root, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_hashed_password = tk.Entry(root, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 entry_hashed_password.pack()
 
 # Barre de progression
@@ -125,6 +127,6 @@ retry_button.pack(side=tk.LEFT, padx=10)
 # Style personnalisé pour la barre de progression
 style = ttk.Style()
 style.theme_use("default")
-style.configure("Custom.Horizontal.TProgressbar", troughcolor=BG_COLOR, bordercolor=BG_COLOR, background=PROGRESS_COLOR)
+style.configure("Custom.Horizontal.TProgressbar", troughcolor=BG_COLOR, bordercolor=PROGRESS_COLOR, background=PROGRESS_COLOR, borderwidth=2)
 
 root.mainloop()
