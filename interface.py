@@ -176,7 +176,7 @@ root = tk.Tk()
 root.title("Attaque par dictionnaire")
 root.configure(bg=BG_COLOR)
 root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightthickness=0.5)
-root.geometry("500x400")  # Définir la taille de la fenêtre
+root.geometry("550x450")  # Définir la taille de la fenêtre
 
 # Obtenir les dimensions de la fenêtre
 window_width = root.winfo_reqwidth()
@@ -189,11 +189,19 @@ position_down = int(root.winfo_screenheight()/2 - window_height/2)
 # Définir la position de la fenêtre au milieu de l'écran
 root.geometry("+{}+{}".format(position_right, position_down))
 
+# Ajout d'une marge à côté des bordures
+root.grid_rowconfigure(0, weight=1)
+root.grid_columnconfigure(0, weight=1)
+
+# Frame principale avec une marge
+main_frame = tk.Frame(root, bg=BG_COLOR)
+main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
 # Police personnalisée
 custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 
 # Frame pour les boutons d'attaque
-attack_buttons_frame = tk.Frame(root, bg=BG_COLOR)
+attack_buttons_frame = tk.Frame(main_frame, bg=BG_COLOR)
 attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
 
 # Boutons pour les différentes attaques
@@ -210,25 +218,25 @@ lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_CO
 lookup_table_button.pack(pady=10)
 
 # Label pour le mot de passe haché
-label_hashed_password = tk.Label(root, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 
 # Entrée pour le mot de passe haché
-entry_hashed_password = tk.Entry(root, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 
 # Bouton pour cracker le mot de passe
-crack_button = Button(root, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 
 # Barre de progression
-progress_bar = ttk.Progressbar(root, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
+progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
 
 # Label pour afficher le pourcentage
-percentage_label = tk.Label(root, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
+percentage_label = tk.Label(main_frame, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
 
 # Label clignotant
-blink_label = tk.Label(root, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
+blink_label = tk.Label(main_frame, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
 
 # Frame pour afficher le résultat et le bouton "Nouvelle tentative"
-result_frame = tk.Frame(root, bg=BG_COLOR)
+result_frame = tk.Frame(main_frame, bg=BG_COLOR)
 result_label = tk.Label(result_frame, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
 result_label.pack(side=tk.LEFT, padx=10)
 password_label = tk.Label(result_frame, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
@@ -237,11 +245,11 @@ retry_button = Button(result_frame, text="Nouvelle tentative", command=retry, fg
 retry_button.pack(side=tk.LEFT, padx=10)
 
 # Label pour afficher la date et l'heure en haut à droite
-date_label = tk.Label(root, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
+date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
 date_label.place(relx=1.0, rely=0, anchor='ne')
 
 # Bouton "Retour" en bas à gauche
-back_button = Button(root, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+back_button = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
 # Style personnalisé pour la barre de progression
