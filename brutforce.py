@@ -1,3 +1,4 @@
+'''''
 import itertools
 import string
 import time
@@ -42,3 +43,53 @@ if bon_mot:
     print(f"Temps écoulé pour trouver le mot: {temps_ecoule:.6f} secondes")
 else:
     print("Aucun mot n'a été trouvé.")
+'''
+import itertools
+import string
+import time
+import hashlib
+import sys
+
+# Définir les caractères autorisés
+CARACTERES = string.ascii_letters + string.digits + string.punctuation
+
+# Fonction pour calculer le hachage MD5 d'un mot
+def md5(mot):
+    return hashlib.md5(mot.encode()).hexdigest()
+
+# Fonction pour tester si un mot correspond au hachage
+def est_bon_mot(mot, hash_a_trouver):
+    return md5(mot) == hash_a_trouver
+
+# Fonction pour trouver le bon mot
+def trouver_bon_mot(hash_a_trouver):
+    longueur = 1
+    start_time = time.time()  # Enregistrer le temps de départ
+    mots_testes = 0
+    while True:
+        for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
+            mots_testes += 1
+            if mots_testes % 10000 == 0:
+                print(f"Mots testés : {mots_testes}")
+                sys.stdout.flush()  # Forcer l'affichage immédiat du message
+            if est_bon_mot(mot, hash_a_trouver):
+                end_time = time.time()  # Enregistrer le temps de fin
+                temps_ecoule = end_time - start_time
+                return mot, temps_ecoule
+        longueur += 1
+
+# Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
+def retrouver_mot():
+    hash_input = input("Entrez le hash MD5 : ").strip()
+    if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
+        print("Le hash entré n'est pas valide.")
+        return
+    bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
+    if bon_mot_trouve:
+        print(f"\nLe mot correspondant au hachage {hash_input} est: {bon_mot_trouve}")
+        print(f"Temps écoulé pour trouver le mot: {temps_ecoule:.6f} secondes")
+    else:
+        print("Aucun mot n'a été trouvé.")
+
+# Exemple d'utilisation
+retrouver_mot()

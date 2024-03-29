@@ -6,7 +6,8 @@ from tkmacosx import Button
 import hashlib
 import time
 from datetime import datetime
-import subprocess
+import itertools
+import string
 
 # Couleurs
 BG_COLOR = "#000000"
@@ -27,11 +28,96 @@ def blink_dots(label, delay=500):
         label.after(delay, show_dots, dots[1:] + dots[:1])
 
     show_dots("...")
+#pour effacer le menu
+def effacer_menu():
+    attack_buttons_frame.destroy()
 #fonction pour la force brut 
 def run_brute_force():
     try:
-        # Exécuter le programme de force brute
-        subprocess.Popen(["python", "interfacebrutforce.py"])
+       effacer_menu()
+       CARACTERES = string.ascii_letters + string.digits + string.punctuation
+
+       def md5(mot):
+            return hashlib.md5(mot.encode()).hexdigest()
+
+       def est_bon_mot(mot, hash_a_trouver):
+            return md5(mot) == hash_a_trouver
+
+       def trouver_bon_mot(hash_a_trouver):
+           longueur = 1
+           start_time = time.time()
+           mots_testes = 0
+           while True:
+             for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
+              if est_bon_mot(mot, hash_a_trouver):
+                  end_time = time.time()  # Enregistrer le temps de fin
+                  temps_ecoule = end_time - start_time
+                  return mot, temps_ecoule
+            # Mettre à jour la fenêtre principale avec chaque essai
+              label_resultat.config(text=f" {mot}",fg="green")
+              root.update()
+             longueur += 1
+
+       def retrouver_mot(hash_input):
+         if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
+            return "Le hash entré n'est pas valide.", None
+         bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
+         if bon_mot_trouve:
+            return f"Le mot est: {bon_mot_trouve}", temps_ecoule
+         else:
+             return "Aucun mot n'a été trouvé.", None
+
+       def rechercher_mot():
+          hash_input = entry_hash.get().strip()
+          resultat_text, temps_ecoule = retrouver_mot(hash_input)
+          label_resultat.config(text=resultat_text)
+          if temps_ecoule:
+             label_temps.config(text=f"trouvé en : {temps_ecoule:.6f} secondes")
+             bouton_reinitialiser.pack(side=tk.LEFT, padx=5)
+             bouton_recherche.pack_forget()
+
+       def reinitialiser():
+         entry_hash.delete(0, tk.END)
+         label_resultat.config(text="")
+         label_temps.config(text="")
+         bouton_reinitialiser.pack_forget()
+         bouton_recherche.pack()
+
+  # Création de l'interface graphique
+   
+
+# Frame pour centrer les widgets
+       frame_centre = tk.Frame(root, bg='black')
+       frame_centre.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+       label_hash = tk.Label(frame_centre, text="Entrez le hash MD5 :", fg="white", bg="black")
+       label_hash.pack(pady=5)
+
+       entry_hash = tk.Entry(frame_centre, width=40, bg='black', fg='white')
+       entry_hash.pack(pady=5)
+
+       bouton_recherche = tk.Button(frame_centre, text="Rechercher",activebackground=BUTTON_ACTIVE_COLOR ,command=rechercher_mot, bg='green')
+       bouton_recherche.pack(pady=5)
+
+# Frame pour positionner les résultats et le temps
+       frame_resultat = tk.Frame(root, bg='black')
+       frame_resultat.place(relx=0.5, rely=0.9, anchor=tk.S)
+
+       label_resultat = tk.Label(frame_resultat, text="", fg="green", bg="black")
+       label_resultat.pack(pady=5)
+
+       label_temps = tk.Label(frame_resultat, text="", fg="green", bg="black")
+       label_temps.pack(pady=5)
+
+# Boutons pour fermer et réinitialiser
+       bouton_reinitialiser = tk.Button(frame_resultat, text="Réinitialiser", command=reinitialiser, bg='blue', fg='white')
+
+# Placer le bouton dans le frame_resultat mais le cacher initialement
+       bouton_reinitialiser.pack_forget()
+
+       root.mainloop()
+ 
+       
     except Exception as e:
         messagebox.showerror("Erreur", f"Une erreur s'est produite : {e}")
         
