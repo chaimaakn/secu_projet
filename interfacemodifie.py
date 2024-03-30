@@ -7,6 +7,7 @@ import time
 from datetime import datetime
 import string
 import itertools
+import sys 
 
 # Couleurs
 BG_COLOR = "#000000"
@@ -34,110 +35,91 @@ def effacer_menu():
     attack_buttons_frame.destroy()
 
 
-#fonction pour la force brut 
-def run_brute_force():
-    try:
-       effacer_menu()
-       CARACTERES = string.ascii_letters + string.digits + string.punctuation
+CARACTERES = string.ascii_letters + string.digits + string.punctuation
 
-       def md5(mot):
-            return hashlib.md5(mot.encode()).hexdigest()
+# Fonction pour calculer le hachage MD5 d'un mot
+def md5(mot):
+    return hashlib.md5(mot.encode()).hexdigest()
 
-       def est_bon_mot(mot, hash_a_trouver):
-            return md5(mot) == hash_a_trouver
+# Fonction pour tester si un mot correspond au hachage
+def est_bon_mot(mot, hash_a_trouver):
+    return md5(mot) == hash_a_trouver
 
-       def trouver_bon_mot(hash_a_trouver):
-           longueur = 1
-           start_time = time.time()
-           mots_testes = 0
-           while True:
-             for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
-              if est_bon_mot(mot, hash_a_trouver):
-                  end_time = time.time()  # Enregistrer le temps de fin
-                  temps_ecoule = end_time - start_time
-                  return mot, temps_ecoule
-            # Mettre à jour la fenêtre principale avec chaque essai
-              label_resultat.config(text=f" {mot}",fg="green")
-              root.update()
-             longueur += 1
-
-       def retrouver_mot(hash_input):
-         if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
-            return "Le hash entré n'est pas valide.", None
-         bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
-         if bon_mot_trouve:
-            return f"Le mot est: {bon_mot_trouve}", temps_ecoule
-         else:
-             return "Aucun mot n'a été trouvé.", None
-
-       def rechercher_mot():
-          hash_input = entry_hash.get().strip()
-          resultat_text, temps_ecoule = retrouver_mot(hash_input)
-          label_resultat.config(text=resultat_text)
-          if temps_ecoule:
-             label_temps.config(text=f"trouvé en : {temps_ecoule:.6f} secondes")
-             bouton_reinitialiser.pack(side=tk.LEFT, padx=5)
-             bouton_recherche.pack_forget()
-
-       def reinitialiser():
-         entry_hash.delete(0, tk.END)
-         label_resultat.config(text="")
-         label_temps.config(text="")
-         bouton_reinitialiser.pack_forget()
-         bouton_recherche.pack()
-
-  # Création de l'interface graphique
-       def return_to_previous_screen_br():
-        global current_frame
-        if current_frame == frame_resultat:
-           result_frame.place_forget()
-           run_brute_force()
-       
-        elif current_frame in ():
+# Fonction pour trouver le bon mot
+def trouver_bon_mot(hash_a_trouver):
+    longueur = 1
+    start_time = time.time()  # Enregistrer le temps de départ
+    mots_testes = 0
+    while True:
+        for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
+            mots_testes += 1
+            if mots_testes % 10000 == 0:
+                print(f"Mots testés : {mots_testes}")
+                sys.stdout.flush()
              
-             attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
-             current_frame = attack_buttons_frame
-             toggle_back_button(False)  # Cacher le bouton "Retour"
-        elif current_frame == attack_buttons_frame:
-              pass
+            if est_bon_mot(mot, hash_a_trouver):
+                end_time = time.time()  # Enregistrer le temps de fin
+                temps_ecoule = end_time - start_time
+                return mot, temps_ecoule
+            result_label_brute_force.config(text=f" {mot}",fg=FG_COLOR)
+            root.update()    
+        longueur += 1
 
-# Frame pour centrer les widgets
-       frame_centre = tk.Frame(root, bg='black')
-       frame_centre.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+# Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
+def retrouver_mot(hash_input):
+    
+    if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
+        print("Le hash entré n'est pas valide.")
+        return
+    bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
+    if bon_mot_trouve:
+        
+        retry_button_brute_force.pack(side=tk.LEFT, padx=10)
+        result_label_brute_force.config(text=f"Le mot est: {bon_mot_trouve} \n trouvé en {temps_ecoule:.6f} secondes", fg=FG_COLOR)
 
-       label_hash = tk.Label(frame_centre, text="Entrez le hash MD5 :", fg="white", bg="black")
-       label_hash.pack(pady=5)
+        
+    else:
+        messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
 
-       entry_hash = tk.Entry(frame_centre, width=40, bg='black', fg='white')
-       entry_hash.pack(pady=5)
+start_brute_force_button = None
+def show_brute_force_interface():
+    global entry_brut_force 
+    global start_brute_force_button
+    # Cacher toutes les autres frames
+    hide_all_frames()
 
-       bouton_recherche = tk.Button(frame_centre, text="Rechercher",activebackground=BUTTON_ACTIVE_COLOR ,command=rechercher_mot, bg='green')
-       bouton_recherche.pack(pady=5)
-
-# Frame pour positionner les résultats et le temps
-       frame_resultat = tk.Frame(root, bg='black')
-       frame_resultat.place(relx=0.5, rely=0.9, anchor=tk.S)
-
-       label_resultat = tk.Label(frame_resultat, text="", fg="green", bg="black")
-       label_resultat.pack(pady=5)
-
-       label_temps = tk.Label(frame_resultat, text="", fg="green", bg="black")
-       label_temps.pack(pady=5)
-
-# Boutons pour fermer et réinitialiser
-       bouton_reinitialiser = tk.Button(frame_resultat, text="Réinitialiser", command=reinitialiser, bg='blue', fg='white')
-
-# Placer le bouton dans le frame_resultat mais le cacher initialement
-       bouton_reinitialiser.pack_forget()
+    # Afficher l'interface pour l'attaque par force brute
+    label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+    label_brute_force.place(relx=0.5, rely=0.3, anchor='center')
+    
+    entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+    entry_brut_force.place(relx=0.5, rely=0.4, anchor='center')
+    
+    start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    start_brute_force_button.place(relx=0.5, rely=0.5, anchor='center') 
+    
+    result_frame_brute_force.place(relx=0.5, rely=0.6, anchor='center')
+    result_label_brute_force.pack(pady=10)
+    password_label_brute_force.pack(side="top", padx=10, pady=5)
+    retry_button_brute_force.pack(pady=15)
+    retry_button_brute_force.pack_forget()
+    
+def run_brute_force():
+    
+    try:
+       global start_brute_force_button
+       global entry_brut_force
+       hashed_password = entry_brut_force.get().strip()
        
-       toggle_back_button(True)
-       return_to_previous_screen_br()
-       root.mainloop()
- 
+       if not hashed_password:
+            messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.")
+            return
+       
+       retrouver_mot(hashed_password)
+       
        
     except Exception as e:
-        messagebox.showerror("Erreur", f"Une erreur s'est produite : {e}")
-        
+        messagebox.showerror("Erreur", f"Une erreur s'est produite : {e}")     
 # Variable pour stocker la valeur actuelle de la barre de progression
 current_progress = 0
 
@@ -158,6 +140,7 @@ def hide_all_frames():
     percentage_label.place_forget()
     blink_label.place_forget()
     result_frame.place_forget()
+
         
 # Fonction pour cacher la frame de saisie du mot de passe haché
 def hide_password_entry():
@@ -272,7 +255,18 @@ def retry():
 
     # Réinitialiser l'interface de l'attaque par dictionnaire
     show_dictionary_attack()
-
+    
+def retrybr():
+    global current_frame
+    hide_all_frames()
+    # Cacher les éléments de la tentative précédente
+    result_frame_brute_force.place_forget()
+    result_label_brute_force.config(text="")
+    password_label_brute_force.config(text="")
+    entry_brut_force.delete(0, tk.END)
+    # Réinitialiser l'interface de l'attaque par dictionnaire
+    show_brute_force_interface()
+    
 # Obtenir la date et l'heure actuelles
 def get_current_datetime():
     now = datetime.now()
@@ -317,7 +311,7 @@ attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en ha
 attack_dictionary_button = Button(attack_buttons_frame, text="Attaque par dictionnaire", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_dictionary_attack)
 attack_dictionary_button.pack(pady=10)
 
-brute_force_button = Button(attack_buttons_frame, text="Brute Force", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=run_brute_force)
+brute_force_button = Button(attack_buttons_frame, text="Brute Force", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_brute_force_interface)
 brute_force_button.pack(pady=10)
 
 rainbow_attack_button = Button(attack_buttons_frame, text="Rainbow Attack", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
@@ -334,7 +328,8 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 
 # Bouton pour cracker le mot de passe
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-
+#barre saisie déclaration
+entry_brut_force = None
 # Barre de progression
 progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
 
@@ -352,6 +347,16 @@ password_label = tk.Label(result_frame, bg=BG_COLOR, font=custom_font, fg=ACCENT
 password_label.pack(side=tk.LEFT)
 retry_button = Button(result_frame, text="Nouvelle tentative", command=retry, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button.pack(side=tk.LEFT, padx=10)
+#declaration des frame de brut force j'ai testé les tiennes mais elle me génére pas les résultats que je veux puisque elle sont modelé pour tes fonctions alors j'ai crée les mienne sorry :(
+# Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque par force brute
+result_frame_brute_force = tk.Frame(main_frame, bg=BG_COLOR)
+result_label_brute_force = tk.Label(result_frame_brute_force, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
+result_label_brute_force.pack(side=tk.LEFT, padx=10)
+password_label_brute_force = tk.Label(result_frame_brute_force, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
+password_label_brute_force.pack(side=tk.LEFT)
+retry_button_brute_force = Button(result_frame_brute_force, text="Nouvelle tentative", command=retrybr, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+retry_button_brute_force.pack(side=tk.LEFT, padx=10)
+    
 
 # Label pour afficher la date et l'heure en haut à droite
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
