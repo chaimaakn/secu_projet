@@ -31,8 +31,14 @@ def blink_dots(label, delay=500):
         label.after(delay, show_dots, dots[1:] + dots[:1])
 
     show_dots("...")
-def effacer_menu():
-    attack_buttons_frame.destroy()
+
+def return_to_attack_menu():
+    hide_all_frames()
+    global current_frame
+    hide_all_frames()  # Cacher toutes les frames
+    attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center') 
+    current_frame = attack_buttons_frame  # Mettre à jour la frame actuelle
+    toggle_back_button(False)
 
 
 CARACTERES = string.ascii_letters + string.digits + string.punctuation
@@ -89,7 +95,7 @@ def show_brute_force_interface():
     hide_all_frames()
 
     # Afficher l'interface pour l'attaque par force brute
-    label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+    label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg="white", bg=BG_COLOR, font=custom_font)
     label_brute_force.place(relx=0.5, rely=0.3, anchor='center')
     
     entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
@@ -103,6 +109,8 @@ def show_brute_force_interface():
     password_label_brute_force.pack(side="top", padx=10, pady=5)
     retry_button_brute_force.pack(pady=15)
     retry_button_brute_force.pack_forget()
+    back_button_brute_force = Button(main_frame, text="Retour", command=return_to_attack_menu, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+    back_button_brute_force.place(relx=0, rely=1.0, anchor='sw')
     
 def run_brute_force():
     
