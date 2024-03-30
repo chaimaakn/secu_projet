@@ -19,7 +19,7 @@ BUTTON_ACTIVE_COLOR = "#004400"  # Couleur des boutons lorsqu'ils sont actifs
 
 # Police de caractères
 FONT_FAMILY = "Courier"
-FONT_SIZE = 12
+FONT_SIZE = 14
 
 # Frame actuellement affichée
 current_frame = None
@@ -70,6 +70,7 @@ def retrouver_mot(hash_input):
     
     if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
         print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
         return
     bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
     if bon_mot_trouve:
@@ -167,7 +168,7 @@ def show_dictionary_attack():
     hide_all_frames()  # Cacher toutes les frames
 
     # Afficher l'interface de l'attaque par dictionnaire
-    label_hashed_password.place(relx=0.5, rely=0.35, anchor='center')
+    label_hashed_password.place(relx=0.5, rely=0.30, anchor='center')
     entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
     crack_button.place(relx=0.5, rely=0.5, anchor='center')
     current_frame = label_hashed_password
@@ -185,6 +186,8 @@ def return_to_previous_screen():
         progress_bar.place_forget()
         percentage_label.place_forget()
         blink_label.place_forget()
+        result_label.place_forget()
+        password_label.place_forget()
         show_dictionary_attack()
     elif current_frame == result_frame_brute_force:
         back_button_brute_force.place_forget()
@@ -212,7 +215,10 @@ def crack_password():
     if not hashed_password:
         messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
         return
-
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
     hide_all_frames()  # Cacher toutes les frames
    
     # Cacher tous les widgets sauf la barre de progression et le label clignotant
@@ -245,22 +251,22 @@ def crack_password():
     progress_bar.place_forget()  # Cacher la barre de progression
     percentage_label.place_forget()  # Cacher le label de pourcentage
     blink_label.place_forget()  # Cacher le label clignotant
+    if current_frame==progress_bar:
+        for word in words:
+            md5_hash = hashlib.md5(word.encode()).hexdigest()
+            if hashed_password == md5_hash:
+                result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                password_label.config(text=word, fg=ACCENT_COLOR)
+                result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                current_frame = result_frame
+                toggle_back_button(False)
+                return
 
-    for word in words:
-        md5_hash = hashlib.md5(word.encode()).hexdigest()
-        if hashed_password == md5_hash:
-            result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-            password_label.config(text=word, fg=ACCENT_COLOR)
-            result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-            current_frame = result_frame
-            toggle_back_button(False)
-            return
-
-    result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
-    password_label.config(text="")
-    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-    current_frame = result_frame
-    toggle_back_button(False)
+        result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        password_label.config(text="")
+        result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        current_frame = result_frame
+        toggle_back_button(False)
     
 
 # Fonction pour réinitialiser l'interface
@@ -347,7 +353,7 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 # Bouton pour cracker le mot de passe
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 #Declaration brut force 
-label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg="white", bg=BG_COLOR, font=custom_font)
+label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
