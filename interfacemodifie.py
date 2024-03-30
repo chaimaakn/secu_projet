@@ -84,6 +84,7 @@ def retrouver_mot(hash_input):
 start_brute_force_button = None
 def show_brute_force_interface():
     global entry_brut_force 
+    global current_frame
     global start_brute_force_button
     # Cacher toutes les autres frames
     hide_all_frames()
@@ -100,6 +101,8 @@ def show_brute_force_interface():
     retry_button_brute_force.pack_forget()
     
     back_button_brute_force.place(relx=0, rely=1.0, anchor='sw')
+    current_frame = result_frame_brute_force
+    toggle_back_button(True)
     
 def run_brute_force():
     
@@ -183,6 +186,17 @@ def return_to_previous_screen():
         percentage_label.place_forget()
         blink_label.place_forget()
         show_dictionary_attack()
+    elif current_frame == result_frame_brute_force:
+        back_button_brute_force.place_forget()
+        result_frame_brute_force.place_forget()
+        result_label_brute_force.place_forget()
+        password_label_brute_force.place_forget
+        entry_brut_force.place_forget()
+        label_brute_force.place_forget()
+        start_brute_force_button.place_forget()
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = attack_buttons_frame
+        toggle_back_button(False)
     elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
