@@ -152,6 +152,8 @@ def hide_all_frames():
     result_frame_lookup_table.place_forget()
     result_label_lookup_table.place_forget()
     password_label_lookup_table.place_forget()
+    label_lookup_table.place_forget()
+    entry_lookup_table.place_forget()
     
 
 
