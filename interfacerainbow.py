@@ -155,7 +155,6 @@ def hide_all_frames():
     result_frame_rainbow.place_forget()
     result_label_rainbow.config(text="")
     password_label_rainbow.config(text="")
-    #entry_rainbow.delete(0, tk.END)
     retry_button_rainbow.pack_forget() 
     #label_rainbow.place_forget() 
     #start_rainbow_button.place_forget()
@@ -229,9 +228,9 @@ def return_to_previous_screen():
         entry_hashed_password.delete(0, tk.END) 
         label_hashed_password.place_forget() 
         crack_button.place_forget()
-        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')  # Revenir à l'écran principal
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
-        toggle_back_button(False)  # Cacher le bouton "Retour"
+        toggle_back_button(False)  
     elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
@@ -396,9 +395,58 @@ def show_rainbow_attack_interface():
       
 
 # Fonction pour lancer l'attaque Rainbow
+'''
 def launch_rainbow_attack(entry_hashed_password):
     global current_frame, current_progress
     hashed_password = entry_hashed_password.get().strip()
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    progress_bar.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
+    progress_bar.config(maximum=100)
+    progress_bar.start()
+    progress_bar.step(0)
+    percentage_label.place(relx=0.5, rely=0.28, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
+    blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
+    blink_dots(blink_label)  # Démarrer le clignotement des points
+
+    current_frame = progress_bar
+    toggle_back_button(True)
+    for progress in tqdm(range(101), desc="Recherche...", unit="%", leave=False):
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        #progress_bar.step(1)
+        percentage_label.config(text=f"{current_progress}%")
+        root.update()
+        time.sleep(0.05)
+
+    reset_progress_bar()  # Réinitialiser la barre de progression après la boucle
+
+    
+    result = run_rainbow(entry_hashed_password)
+    if result:
+        result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
+        password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
+    else:
+        password_label_rainbow.pack_forget()
+        result_label_rainbow.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        retry_button_rainbow.pack(pady=15)
+        hide_password_entry()
+    progress_bar.place_forget()  # Cacher la barre de progression
+    percentage_label.place_forget()  # Cacher le label de pourcentage
+    blink_label.place_forget()  # Cacher le label clignotant
+    toggle_back_button(False)
+'''
+
+def launch_rainbow_attack(entry_hashed_password):
+    global current_frame, current_progress
+    hashed_password = entry_hashed_password.get().strip()
+    hide_all_frames()
+
     if not hashed_password:
         messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
         return
@@ -411,10 +459,10 @@ def launch_rainbow_attack(entry_hashed_password):
     if result:
         result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
         password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
-        retry_button_rainbow.pack(pady=15)  # Afficher le bouton "Nouvelle tentative"
     else:
         result_label_rainbow.config(text="Tentative échouée", fg=ACCENT_COLOR)
-        password_label_rainbow.config(text="")
+        retry_button_rainbow.pack(pady=15)
+        hide_password_entry()
 
 '''
 def show_rainbow_attack_interface():
@@ -514,7 +562,7 @@ def get_current_datetime():
 
 # Configuration de la fenêtre principale
 root = tk.Tk()
-root.title("Attaque par dictionnaire")
+root.title("Attaque sur les mots de passes")
 root.configure(bg=BG_COLOR)
 root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightthickness=0.5)
 root.geometry("550x450")  # Définir la taille de la fenêtre
