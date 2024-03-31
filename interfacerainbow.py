@@ -8,6 +8,7 @@ from datetime import datetime
 import string
 import itertools
 import sys 
+import pickle
 
 # Couleurs
 BG_COLOR = "#000000"
@@ -40,39 +41,6 @@ CARACTERES = string.ascii_letters + string.digits + string.punctuation
 # Fonction pour calculer le hachage MD5 d'un mot
 def md5(mot):
     return hashlib.md5(mot.encode()).hexdigest()
-
-# Fonction pour effectuer une attaque Rainbow
-def run_rainbow(hachage_cible):
-    # Charger la table arc-en-ciel depuis le fichier
-    table_arc_en_ciel = {}
-    with open('table_arc_en_ciel_test.txt', 'r') as f:
-        for ligne in f:
-            mot_de_passe, hachage = ligne.strip().split()
-            table_arc_en_ciel[mot_de_passe] = hachage
-
-    # Vérifier si le hachage cible est dans la table
-    if hachage_cible in table_arc_en_ciel.values():
-        for mot_de_passe, hachage in table_arc_en_ciel.items():
-            if hachage == hachage_cible:
-                return mot_de_passe
-
-    return None
-
-# Définition de la méthode delete pour entry_rainbow
-def delete_entry_rainbow():
-    entry_rainbow.delete(0, tk.END)
-
-def retryrnb():
-    global current_frame
-    hide_all_frames()
-    # Cacher les éléments de la tentative précédente
-    result_frame_rainbow.place_forget()
-    result_label_rainbow.config(text="")
-    password_label_rainbow.config(text="")
-    entry_rainbow.delete(0, tk.END)
-    # Réinitialiser l'interface 
-    show_rainbow_attack_interface()
-
 
 # Fonction pour tester si un mot correspond au hachage
 def est_bon_mot(mot, hash_a_trouver):
@@ -179,7 +147,18 @@ def hide_all_frames():
     result_label_brute_force.place_forget()
     password_label_brute_force.place_forget
     entry_brut_force.delete(0, tk.END)
-    
+    result_frame_lookup_table.place_forget()
+    result_label_lookup_table.place_forget()
+    password_label_lookup_table.place_forget()
+    label_lookup_table.place_forget()
+    entry_lookup_table.place_forget()
+    result_frame_rainbow.place_forget()
+    result_label_rainbow.config(text="")
+    password_label_rainbow.config(text="")
+    #entry_rainbow.delete(0, tk.END)
+    retry_button_rainbow.pack_forget() 
+    #label_rainbow.place_forget() 
+    #start_rainbow_button.place_forget()
 
 
         
@@ -233,6 +212,26 @@ def return_to_previous_screen():
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
         toggle_back_button(False)
+    elif current_frame == result_frame_lookup_table:
+        back_button_lookup_table.place_forget()
+        result_frame_lookup_table.place_forget()
+        result_label_lookup_table.place_forget()
+        password_label_lookup_table.place_forget
+        entry_lookup_table.place_forget()
+        label_lookup_table.place_forget()
+        start_lookup_table_button.place_forget()
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = attack_buttons_frame
+        toggle_back_button(False)   
+    elif current_frame == result_frame_rainbow:
+        hide_password_entry()  
+        result_frame_rainbow.place_forget()
+        entry_hashed_password.delete(0, tk.END) 
+        label_hashed_password.place_forget() 
+        crack_button.place_forget()
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')  # Revenir à l'écran principal
+        current_frame = attack_buttons_frame
+        toggle_back_button(False)  # Cacher le bouton "Retour"
     elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
@@ -301,6 +300,166 @@ def crack_password():
         current_frame = result_frame
         toggle_back_button(False)
     
+#fonction pour l'attaque lookup table 
+def run_lookup_table():
+    global current_frame, current_progress
+    hashed_password = entry_lookup_table.get().strip()
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    hide_all_frames()
+
+    with open("password_dict.pkl", "rb") as file:
+         password_dic = pickle.load(file)
+
+    if hashed_password in password_dic:
+        result_label_lookup_table.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+        password_label_lookup_table.config(text=password_dic[hashed_password], fg=FG_COLOR)
+        result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        retry_button_lookup_table.pack(side=tk.LEFT, padx=10)
+        current_frame = result_frame_lookup_table
+        toggle_back_button(False)
+        
+    else:
+        result_label_lookup_table.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        password_label_lookup_table.config(text="")
+        result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        current_frame = result_frame_lookup_table
+        toggle_back_button(False)   
+
+
+# Fonction pour afficher l'interface de l'attaque par lookup table
+def show_lookup_table():
+    global entry_lookup_table 
+    global current_frame
+    global start_lookup_table_button
+    # Cacher toutes les autres frames
+    hide_all_frames()
+
+    # Afficher l'interface pour l'attaque par lookup table
+    
+    label_lookup_table.place(relx=0.5, rely=0.3, anchor='center')
+    entry_lookup_table.place(relx=0.5, rely=0.4, anchor='center')
+    start_lookup_table_button.place(relx=0.5, rely=0.5, anchor='center') 
+    result_frame_lookup_table.place(relx=0.5, rely=0.6, anchor='center')
+    result_label_lookup_table.pack(pady=10)
+    password_label_lookup_table.pack(side="top", padx=10, pady=5)
+    retry_button_lookup_table.pack(pady=15)
+    retry_button_lookup_table.pack_forget()
+    
+    back_button_lookup_table.place(relx=0, rely=1.0, anchor='sw')
+    current_frame = result_frame_lookup_table
+    toggle_back_button(True)
+
+# Fonction pour effectuer une attaque Rainbow
+def run_rainbow(entry_rainbow):
+    hashed_password = entry_rainbow.get().strip()
+    # Charger la table arc-en-ciel depuis le fichier
+    table_arc_en_ciel = {}
+    with open('table_arc_en_ciel_test.txt', 'r') as f:
+        for ligne in f:
+            mot_de_passe, hachage = ligne.strip().split()
+            table_arc_en_ciel[mot_de_passe] = hachage
+
+    # Vérifier si le hachage cible est dans la table
+    for mot_de_passe, hachage in table_arc_en_ciel.items():
+        if hachage == hashed_password:
+            return mot_de_passe
+
+    return None
+
+# Fonction pour afficher l'interface de l'attaque Rainbow
+def show_rainbow_attack_interface():
+    global current_frame
+    global entry_hashed_password
+    hide_all_frames()  # Cacher toutes les frames sauf celle de l'attaque Rainbow
+    
+    # Affichage de l'interface
+    label_hashed_password.place(relx=0.5, rely=0.3, anchor='center')
+    entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
+    crack_button.place(relx=0.5, rely=0.5, anchor='center')
+    crack_button.config(command=lambda: launch_rainbow_attack(entry_hashed_password))
+    result_frame_rainbow.place(relx=0.5, rely=0.6, anchor='center')
+    result_label_rainbow.pack(pady=5)  
+    password_label_rainbow.pack(pady=5) 
+    retry_button_rainbow.place(relx=0.5, rely=0.10, anchor='center')
+    retry_button_rainbow.pack(pady=15)
+    retry_button_rainbow.pack_forget() 
+    back_button.place(relx=0, rely=1.0, anchor='sw') 
+    current_frame = result_frame_rainbow  
+    toggle_back_button(True)
+    
+      
+
+# Fonction pour lancer l'attaque Rainbow
+def launch_rainbow_attack(entry_hashed_password):
+    global current_frame, current_progress
+    hashed_password = entry_hashed_password.get().strip()
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    
+    result = run_rainbow(entry_hashed_password)
+    if result:
+        result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
+        password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
+        retry_button_rainbow.pack(pady=15)  # Afficher le bouton "Nouvelle tentative"
+    else:
+        result_label_rainbow.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        password_label_rainbow.config(text="")
+
+'''
+def show_rainbow_attack_interface():
+    global current_frame
+    global entry_hashed_password
+    global crack_button
+    hide_all_frames()  # Cacher toutes les frames sauf celle de l'attaque Rainbow
+    
+    # Affichage de l'interface
+    label_hashed_password.place(relx=0.5, rely=0.3, anchor='center')
+    entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
+    crack_button.config(command=lambda: launch_rainbow_attack(entry_hashed_password))  # Modifier la commande pour appeler la fonction de l'attaque Rainbow
+    #start_rainbow_button.place(relx=0.5, rely=0.5, anchor='center') 
+    result_frame_rainbow.place(relx=0.5, rely=0.6, anchor='center')
+    result_label_rainbow.pack(pady=10)
+    password_label_rainbow.pack(side="top", padx=10, pady=5)
+    retry_button_rainbow.pack(pady=15)
+    retry_button_rainbow.pack_forget()  # Cacher le bouton "Nouvelle tentative" par défaut
+    
+    back_button.place(relx=0, rely=1.0, anchor='sw')  # Bouton "Retour"
+    
+    current_frame = result_frame_rainbow  # Mettre à jour la frame actuelle
+    toggle_back_button(True)
+
+# Fonction pour lancer l'attaque Rainbow
+def launch_rainbow_attack(entry_hashed_password):
+    global current_frame, current_progress
+    hashed_password = entry_hashed_password.get().strip()
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    
+    result = run_rainbow(entry_hashed_password)
+    if result:
+        result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
+        password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
+        retry_button_rainbow.pack(pady=15)  # Afficher le bouton "Nouvelle tentative"
+    else:
+        result_label_rainbow.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        password_label_rainbow.config(text="")
+'''
 
 # Fonction pour réinitialiser l'interface
 def retry():
@@ -323,7 +482,29 @@ def retrybr():
     entry_brut_force.delete(0, tk.END)
     # Réinitialiser l'interface de l'attaque par dictionnaire
     show_brute_force_interface()
-    
+
+def retrylookuptable():
+    global current_frame
+    hide_all_frames()
+    # Cacher les éléments de la tentative précédente
+    result_frame_lookup_table.place_forget()
+    result_label_lookup_table.config(text="")
+    password_label_lookup_table.config(text="")
+   
+    # Réinitialiser l'interface de l'attaque par lookup table
+    show_lookup_table()   
+
+def retryrnb():
+    global current_frame
+    hide_all_frames()
+    # Cacher les éléments de la tentative précédente
+    result_frame_rainbow.place_forget()
+    result_label_rainbow.config(text="")
+    password_label_rainbow.config(text="")
+    entry_hashed_password.delete(0, tk.END)
+    # Réinitialiser l'interface 
+    show_rainbow_attack_interface()
+
 # Obtenir la date et l'heure actuelles
 def get_current_datetime():
     now = datetime.now()
@@ -371,10 +552,10 @@ attack_dictionary_button.pack(pady=10)
 brute_force_button = Button(attack_buttons_frame, text="Brute Force", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_brute_force_interface)
 brute_force_button.pack(pady=10)
 
-rainbow_attack_button = Button(attack_buttons_frame, text="Rainbow Attack", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+rainbow_attack_button = Button(attack_buttons_frame, text="Rainbow Attack", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_rainbow_attack_interface)
 rainbow_attack_button.pack(pady=10)
 
-lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
 
 # Label pour le mot de passe haché
@@ -390,6 +571,19 @@ label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché 
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+
+#Declaration lookup table 
+label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+start_lookup_table_button = Button(main_frame, text="Rechercher", command=run_lookup_table, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
+entry_lookup_table = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+back_button_lookup_table = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+
+#declaration rainbow 
+#label_rainbow = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+#start_rainbow_button = Button(main_frame, text="Craquer", command=launch_rainbow_attack, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
+#back_button_rainbow = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+#entry_rainbow = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+
 # Barre de progression
 progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
 
@@ -417,6 +611,16 @@ password_label_brute_force.pack(side=tk.LEFT)
 retry_button_brute_force = Button(result_frame_brute_force, text="Nouvelle tentative", command=retrybr, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button_brute_force.pack(side=tk.LEFT, padx=10)
 
+# Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque par lookup table
+result_frame_lookup_table = tk.Frame(main_frame, bg=BG_COLOR)
+result_label_lookup_table = tk.Label(result_frame_lookup_table, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
+result_label_lookup_table.pack(side=tk.LEFT, padx=10)
+password_label_lookup_table = tk.Label(result_frame_lookup_table, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
+password_label_lookup_table.pack(side=tk.LEFT)
+retry_button_lookup_table = Button(result_frame_lookup_table, text="Nouvelle tentative", command=retrylookuptable, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+retry_button_lookup_table.pack(side=tk.LEFT, padx=10)   
+
+
 # Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque Rainbow
 result_frame_rainbow = tk.Frame(main_frame, bg=BG_COLOR)
 result_label_rainbow = tk.Label(result_frame_rainbow, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
@@ -425,53 +629,6 @@ password_label_rainbow = tk.Label(result_frame_rainbow, bg=BG_COLOR, font=custom
 password_label_rainbow.pack(side=tk.LEFT)
 retry_button_rainbow = Button(result_frame_rainbow, text="Nouvelle tentative", command=retryrnb, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button_rainbow.pack(side=tk.LEFT, padx=10)
-#back_button_rainbow = Button(result_frame_rainbow, text="Retour", bg=BUTTON_COLOR, fg=FG_COLOR, activebackground=BUTTON_ACTIVE_COLOR, activeforeground=FG_COLOR, font=custom_front, borderless=1, command=show_main_interface)
-back_button_rainbow = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
-entry_rainbow = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-
-# Fonction pour afficher l'interface de l'attaque Rainbow
-def show_rainbow_attack_interface():
-    global current_frame
-    hide_all_frames()  # Cacher toutes les frames sauf celle de l'attaque Rainbow
-    
-    # Affichage de l'interface
-    label_hashed_password.place(relx=0.5, rely=0.3, anchor='center')
-    entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
-    crack_button.place(relx=0.5, rely=0.5, anchor='center') 
-    result_frame_rainbow.place(relx=0.5, rely=0.6, anchor='center')
-    result_label_rainbow.pack(pady=10)
-    password_label_rainbow.pack(side="top", padx=10, pady=5)
-    retry_button_rainbow.pack(pady=15)
-    retry_button_rainbow.pack_forget()  # Cacher le bouton "Nouvelle tentative" par défaut
-    
-    back_button_rainbow.place(relx=0, rely=1.0, anchor='sw')  # Bouton "Retour"
-    
-    current_frame = result_frame_rainbow  # Mettre à jour la frame actuelle
-
-# Associer la fonction à l'événement "click" du bouton rainbow_attack_button
-rainbow_attack_button.config(command=show_rainbow_attack_interface)
-
-# Fonction pour lancer l'attaque Rainbow
-def launch_rainbow_attack():
-    hashed_password = entry_hashed_password.get().strip()
-    if not hashed_password:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
-        print("Le hash entré n'est pas valide.")
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    
-    result = run_rainbow(hashed_password)
-    if result:
-        result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
-        password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
-        retry_button_rainbow.pack(pady=15)  # Afficher le bouton "Nouvelle tentative"
-    else:
-        result_label_rainbow.config(text="Tentative échouée", fg=ACCENT_COLOR)
-        password_label_rainbow.config(text="")
-
-
 
 # Label pour afficher la date et l'heure en haut à droite
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
