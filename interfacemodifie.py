@@ -8,6 +8,7 @@ from datetime import datetime
 import string
 import itertools
 import sys 
+import pickle
 
 # Couleurs
 BG_COLOR = "#000000"
@@ -146,6 +147,9 @@ def hide_all_frames():
     result_label_brute_force.place_forget()
     password_label_brute_force.place_forget
     entry_brut_force.delete(0, tk.END)
+    result_frame_lookup_table.place_forget()
+    result_label_lookup_table.place_forget()
+    password_label_lookup_table.place_forget()
     
 
 
@@ -200,6 +204,17 @@ def return_to_previous_screen():
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
         toggle_back_button(False)
+    elif current_frame == result_frame_lookup_table:
+        back_button_lookup_table.place_forget()
+        result_frame_lookup_table.place_forget()
+        result_label_lookup_table.place_forget()
+        password_label_lookup_table.place_forget
+        entry_lookup_table.place_forget()
+        label_lookup_table.place_forget()
+        start_lookup_table_button.place_forget()
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = attack_buttons_frame
+        toggle_back_button(False)    
     elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
@@ -268,6 +283,61 @@ def crack_password():
         current_frame = result_frame
         toggle_back_button(False)
     
+#fonction pour l'attaque lookup table 
+def run_lookup_table():
+    global current_frame, current_progress
+    hashed_password = entry_lookup_table.get().strip()
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    hide_all_frames()
+
+    with open("password_dict.pkl", "rb") as file:
+         password_dic = pickle.load(file)
+
+    if hashed_password in password_dic:
+        result_label_lookup_table.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+        password_label_lookup_table.config(text=password_dic[hashed_password], fg=FG_COLOR)
+        result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        retry_button_lookup_table.pack(side=tk.LEFT, padx=10)
+        current_frame = result_frame_lookup_table
+        toggle_back_button(False)
+        
+    else:
+        result_label_lookup_table.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        password_label_lookup_table.config(text="")
+        result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        current_frame = result_frame_lookup_table
+        toggle_back_button(False)   
+
+
+# Fonction pour afficher l'interface de l'attaque par lookup table
+def show_lookup_table():
+    global entry_lookup_table 
+    global current_frame
+    global start_lookup_table_button
+    # Cacher toutes les autres frames
+    hide_all_frames()
+
+    # Afficher l'interface pour l'attaque par lookup table
+    
+    label_lookup_table.place(relx=0.5, rely=0.3, anchor='center')
+    entry_lookup_table.place(relx=0.5, rely=0.4, anchor='center')
+    start_lookup_table_button.place(relx=0.5, rely=0.5, anchor='center') 
+    result_frame_lookup_table.place(relx=0.5, rely=0.6, anchor='center')
+    result_label_lookup_table.pack(pady=10)
+    password_label_lookup_table.pack(side="top", padx=10, pady=5)
+    retry_button_lookup_table.pack(pady=15)
+    retry_button_lookup_table.pack_forget()
+    
+    back_button_lookup_table.place(relx=0, rely=1.0, anchor='sw')
+    current_frame = result_frame_lookup_table
+    toggle_back_button(True)
+
 
 # Fonction pour réinitialiser l'interface
 def retry():
@@ -290,7 +360,19 @@ def retrybr():
     entry_brut_force.delete(0, tk.END)
     # Réinitialiser l'interface de l'attaque par dictionnaire
     show_brute_force_interface()
-    
+
+def retrylookuptable():
+    global current_frame
+    hide_all_frames()
+    # Cacher les éléments de la tentative précédente
+    result_frame_lookup_table.place_forget()
+    result_label_lookup_table.config(text="")
+    password_label_lookup_table.config(text="")
+   
+    # Réinitialiser l'interface de l'attaque par lookup table
+    show_lookup_table()   
+
+
 # Obtenir la date et l'heure actuelles
 def get_current_datetime():
     now = datetime.now()
@@ -341,7 +423,7 @@ brute_force_button.pack(pady=10)
 rainbow_attack_button = Button(attack_buttons_frame, text="Rainbow Attack", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 rainbow_attack_button.pack(pady=10)
 
-lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
 
 # Label pour le mot de passe haché
@@ -357,6 +439,13 @@ label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché 
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+
+#Declaration lookup table 
+label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+start_lookup_table_button = Button(main_frame, text="Rechercher", command=run_lookup_table, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
+entry_lookup_table = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+back_button_lookup_table = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+
 # Barre de progression
 progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
 
@@ -383,7 +472,15 @@ password_label_brute_force = tk.Label(result_frame_brute_force, bg=BG_COLOR, fon
 password_label_brute_force.pack(side=tk.LEFT)
 retry_button_brute_force = Button(result_frame_brute_force, text="Nouvelle tentative", command=retrybr, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button_brute_force.pack(side=tk.LEFT, padx=10)
-    
+
+# Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque par lookup table
+result_frame_lookup_table = tk.Frame(main_frame, bg=BG_COLOR)
+result_label_lookup_table = tk.Label(result_frame_lookup_table, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
+result_label_lookup_table.pack(side=tk.LEFT, padx=10)
+password_label_lookup_table = tk.Label(result_frame_lookup_table, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
+password_label_lookup_table.pack(side=tk.LEFT)
+retry_button_lookup_table = Button(result_frame_lookup_table, text="Nouvelle tentative", command=retrylookuptable, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+retry_button_lookup_table.pack(side=tk.LEFT, padx=10)   
 
 # Label pour afficher la date et l'heure en haut à droite
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
