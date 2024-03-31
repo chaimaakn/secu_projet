@@ -82,7 +82,7 @@ def retrouver_mot(hash_input):
     else:
         messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
 
-start_brute_force_button = None
+
 def show_brute_force_interface():
     global entry_brut_force 
     global current_frame
