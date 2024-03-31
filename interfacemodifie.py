@@ -131,6 +131,8 @@ def toggle_back_button(show):
         back_button.place(relx=0, rely=1.0, anchor='sw')
     else:
         back_button.place_forget()
+        back_button_brute_force.place_forget()
+        back_button_lookup_table.place_forget()
 
 # Fonction pour cacher toutes les frames
 
@@ -311,6 +313,8 @@ def run_lookup_table():
         result_label_lookup_table.config(text="Tentative échouée", fg=ACCENT_COLOR)
         password_label_lookup_table.config(text="")
         result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        retry_button_lookup_table.pack(side=tk.LEFT, padx=10)
         current_frame = result_frame_lookup_table
         toggle_back_button(False)   
 
