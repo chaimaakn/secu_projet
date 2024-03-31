@@ -16,7 +16,7 @@ def creer_table_arc_en_ciel(dictionnaire, longueur_chaine, longueur_reduction, n
         for _ in range(nombre_chaines):
             hachage = md5(chaine)
             chaine = reduction(hachage, longueur_reduction)
-        table[chaine] = (mot, hachage)
+        table[mot] = hachage
     return table
 
 # Charger le dictionnaire de mots de passe depuis un fichier
@@ -27,10 +27,10 @@ def charger_dictionnaire(file_name):
 # Paramètres pour la création de la table arc-en-ciel
 longueur_chaine = 3
 longueur_reduction = 8
-nombre_chaines = 10
+nombre_chaines = 100
 
 # Nom du fichier de dictionnaire
-nom_fichier_dictionnaire = "listetest.txt"
+nom_fichier_dictionnaire = "liste.txt"
 
 # Charger le dictionnaire depuis le fichier
 dictionnaire = charger_dictionnaire(nom_fichier_dictionnaire)
@@ -41,7 +41,7 @@ table_arc_en_ciel = creer_table_arc_en_ciel(dictionnaire, longueur_chaine, longu
 # Écrire la table arc-en-ciel dans un fichier texte
 nom_fichier_table_arc_en_ciel = "table_arc_en_ciel.txt"
 with open(nom_fichier_table_arc_en_ciel, 'w') as file:
-    for chaine, (mot_initial, hachage) in table_arc_en_ciel.items():
-        file.write(f"{chaine} {mot_initial} {hachage}\n")
+    for mot_initial, hachage in table_arc_en_ciel.items():
+        file.write(f"{mot_initial} {hachage}\n")
 
 print(f"La table arc-en-ciel a été créée avec succès et enregistrée dans '{nom_fichier_table_arc_en_ciel}'.")
