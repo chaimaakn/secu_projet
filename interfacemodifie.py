@@ -102,7 +102,7 @@ def show_brute_force_interface():
     retry_button_brute_force.pack(pady=15)
     retry_button_brute_force.pack_forget()
     
-    back_button_brute_force.place(relx=0, rely=1.0, anchor='sw')
+    #back_button_brute_force.place(relx=0, rely=1.0, anchor='sw')
     current_frame = result_frame_brute_force
     toggle_back_button(True)
     
@@ -131,8 +131,8 @@ def toggle_back_button(show):
         back_button.place(relx=0, rely=1.0, anchor='sw')
     else:
         back_button.place_forget()
-        back_button_brute_force.place_forget()
-        back_button_lookup_table.place_forget()
+        #back_button_brute_force.place_forget()
+        #back_button_lookup_table.place_forget()
 
 # Fonction pour cacher toutes les frames
 
@@ -158,14 +158,13 @@ def hide_all_frames():
     result_label_rainbow.config(text="")
     password_label_rainbow.config(text="")
     retry_button_rainbow.pack_forget() 
-
-
-        
+   
 # Fonction pour cacher la frame de saisie du mot de passe haché
 def hide_password_entry():
     label_hashed_password.place_forget()
     entry_hashed_password.place_forget()
     crack_button.place_forget()
+
 # Fonction pour réinitialiser la barre de progression
 def reset_progress_bar():
     global current_progress
@@ -185,7 +184,6 @@ def show_dictionary_attack():
     current_frame = label_hashed_password
     toggle_back_button(True)
 
-
 # Fonction pour retourner à l'écran précédent
 def return_to_previous_screen():
     global current_frame
@@ -201,7 +199,8 @@ def return_to_previous_screen():
         password_label.place_forget()
         show_dictionary_attack()
     elif current_frame == result_frame_brute_force:
-        back_button_brute_force.place_forget()
+        back_button.place_forget()
+        #back_button_brute_force.place_forget()
         result_frame_brute_force.place_forget()
         result_label_brute_force.place_forget()
         password_label_brute_force.place_forget
@@ -212,7 +211,8 @@ def return_to_previous_screen():
         current_frame = attack_buttons_frame
         toggle_back_button(False)
     elif current_frame == result_frame_lookup_table:
-        back_button_lookup_table.place_forget()
+        back_button.place_forget()
+        #back_button_lookup_table.place_forget()
         result_frame_lookup_table.place_forget()
         result_label_lookup_table.place_forget()
         password_label_lookup_table.place_forget
@@ -351,7 +351,7 @@ def show_lookup_table():
     retry_button_lookup_table.pack(pady=15)
     retry_button_lookup_table.pack_forget()
     
-    back_button_lookup_table.place(relx=0, rely=1.0, anchor='sw')
+    #back_button_lookup_table.place(relx=0, rely=1.0, anchor='sw')
     current_frame = result_frame_lookup_table
     toggle_back_button(True)
 
@@ -399,6 +399,13 @@ def launch_rainbow_attack(entry_hashed_password):
     global current_frame, current_progress
     hashed_password = entry_hashed_password.get().strip()
     
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return
     # Cacher le champ de texte et le bouton "Cracker"
     label_hashed_password.place_forget()
     entry_hashed_password.place_forget()
@@ -502,8 +509,41 @@ def get_current_datetime():
     now = datetime.now()
     date_time = now.strftime("%d/%m/%Y %H:%M:%S")
     return date_time
+'''
+# désactiver un button 
+def disable_button(button):
+    button.config(state='disabled')
 
+# Fonction pour lier les touches fléchées et la touche "Entrée" aux fonctions correspondantes des boutons
+def bind_keyboard_shortcuts():
+    root.bind_all("<Up>", select_previous_button)    # Flèche vers le haut pour sélectionner le bouton précédent
+    root.bind_all("<Down>", select_next_button)      # Flèche vers le bas pour sélectionner le bouton suivant
+    root.bind_all("<Return>", activate_selected_button)  # Touche "Entrée" pour activer le bouton sélectionné
 
+# Fonction pour sélectionner le bouton précédent
+def select_previous_button(event):
+    global current_button_index
+    current_button_index = (current_button_index - 1) % len(buttons)
+    highlight_button()
+
+# Fonction pour sélectionner le bouton suivant
+def select_next_button(event):
+    global current_button_index
+    current_button_index = (current_button_index + 1) % len(buttons)
+    highlight_button()
+
+# Fonction pour activer le bouton sélectionné
+def activate_selected_button(event):
+    buttons[current_button_index].invoke()
+
+# Fonction pour mettre en surbrillance le bouton sélectionné
+def highlight_button():
+    for index, button in enumerate(buttons):
+        if index == current_button_index:
+            button.config(bg="green")
+        else:
+            button.config(bg=BUTTON_COLOR)  
+'''
 # Configuration de la fenêtre principale
 root = tk.Tk()
 root.title("Attaques sur les mots de passes")
@@ -549,7 +589,17 @@ rainbow_attack_button.pack(pady=10)
 
 lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
+'''
+# Création des boutons
+buttons = [attack_dictionary_button, brute_force_button, rainbow_attack_button, lookup_table_button]
 
+# Index du bouton actuellement sélectionné
+current_button_index = 0
+highlight_button()
+
+# Lier les touches fléchées et la touche "Entrée" aux fonctions correspondantes des boutons
+bind_keyboard_shortcuts()
+'''
 # Label pour le mot de passe haché
 label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 
@@ -558,17 +608,21 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 
 # Bouton pour cracker le mot de passe
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+root.bind("<Return>", lambda event: crack_button.invoke())
+
 #Declaration brut force 
 label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+#back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+root.bind("<Return>", lambda event: start_brute_force_button.invoke())
 
 #Declaration lookup table 
 label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_lookup_table_button = Button(main_frame, text="Rechercher", command=run_lookup_table, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 entry_lookup_table = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-back_button_lookup_table = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+#back_button_lookup_table = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+root.bind("<Return>", lambda event: start_lookup_table_button.invoke())
 
 # Barre de progression
 progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
@@ -621,6 +675,7 @@ date_label.place(relx=1.0, rely=0, anchor='ne')
 
 # Bouton "Retour" en bas à gauche
 back_button = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
 # Style personnalisé pour la barre de progression
