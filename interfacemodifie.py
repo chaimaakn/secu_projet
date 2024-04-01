@@ -9,7 +9,6 @@ import string
 import itertools
 import sys 
 import pickle
-
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
