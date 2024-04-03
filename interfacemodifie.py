@@ -363,7 +363,7 @@ def run_rainbow(entry_rainbow):
     hashed_password = entry_rainbow.get().strip()
     # Charger la table arc-en-ciel depuis le fichier
     table_arc_en_ciel = {}
-    with open('table_arc_en_ciel_test.txt', 'r') as f:
+    with open('table_Rainbow.txt', 'r') as f:
         for ligne in f:
             mot_de_passe, hachage = ligne.strip().split()
             table_arc_en_ciel[hachage] = mot_de_passe
