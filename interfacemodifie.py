@@ -303,7 +303,7 @@ def run_lookup_table():
 
     if hashed_password in password_dic:
         result_label_lookup_table.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-        password_label_lookup_table.config(text=password_dic[hashed_password], fg=FG_COLOR)
+        password_label_lookup_table.config(text=password_dic[hashed_password], fg=ACCENT_COLOR)
         result_frame_lookup_table.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
         retry_button_lookup_table.pack(side=tk.LEFT, padx=10)
         current_frame = result_frame_lookup_table
