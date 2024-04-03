@@ -365,7 +365,8 @@ def run_rainbow(entry_rainbow):
     table_arc_en_ciel = {}
     with open('table_Rainbow.txt', 'r') as f:
         for ligne in f:
-            mot_de_passe, hachage = ligne.strip().split()
+            #mot_de_passe, hachage = ligne.strip().split()
+            mot_de_passe, hachage = ligne.strip().split(' ', 1)
             table_arc_en_ciel[hachage] = mot_de_passe
 
     # Vérifier si le hachage cible est dans la table
