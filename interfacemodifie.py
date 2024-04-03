@@ -354,6 +354,10 @@ def show_lookup_table():
     current_frame = result_frame_lookup_table
     toggle_back_button(True)
 
+# Fonction de réduction
+def reduction(hachage, longueur=8):
+    return hachage[:longueur]
+
 # Fonction pour effectuer une attaque Rainbow
 def run_rainbow(entry_rainbow):
     hashed_password = entry_rainbow.get().strip()
@@ -362,12 +366,26 @@ def run_rainbow(entry_rainbow):
     with open('table_arc_en_ciel_test.txt', 'r') as f:
         for ligne in f:
             mot_de_passe, hachage = ligne.strip().split()
-            table_arc_en_ciel[mot_de_passe] = hachage
+            table_arc_en_ciel[hachage] = mot_de_passe
 
     # Vérifier si le hachage cible est dans la table
-    for mot_de_passe, hachage in table_arc_en_ciel.items():
-        if hachage == hashed_password:
-            return mot_de_passe
+    if hashed_password in table_arc_en_ciel:
+        return table_arc_en_ciel[hashed_password]
+    else:
+        # Commencer par le hachage donné
+        hachage_courant = hashed_password
+
+        # Appliquer les étapes de l'attaque Rainbow
+        for _ in range(100):  # Nombre d'itérations dans la chaîne arc-en-ciel
+            # Réduction
+            chaine_reduite = reduction(hachage_courant,8)
+            h_chaine_reduite=md5(chaine_reduite)
+            # Vérifier si la chaîne réduite est dans la table
+            if h_chaine_reduite in table_arc_en_ciel:
+                return table_arc_en_ciel[h_chaine_reduite]
+
+            # Si la chaîne réduite n'est pas dans la table, hacher à nouveau
+            hachage_courant = h_chaine_reduite
 
     return None
 
@@ -441,22 +459,20 @@ def launch_rainbow_attack(entry_hashed_password):
     blink_label.place_forget()
     toggle_back_button(False)
     
-    # Afficher à nouveau le champ de texte et le bouton "Cracker"
-    label_hashed_password.place(relx=0.5, rely=0.3, anchor='center')
-    entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
-    crack_button.place(relx=0.5, rely=0.5, anchor='center')
-    
     # Affichage des résultats
     result = run_rainbow(entry_hashed_password)
     if result:
         result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
         password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
-        password_label_rainbow.pack(pady=5)  # Afficher le mot de passe trouvé
+        result_frame_rainbow.place(relx=0.5, rely=0.5, anchor='center') 
+        password_label_rainbow.pack(pady=5) 
+        retry_button_rainbow.pack(side=tk.LEFT, padx=10)
+        current_frame = result_frame_rainbow
     else:
         result_label_rainbow.config(text="Tentative échouée", fg=ACCENT_COLOR)
         retry_button_rainbow.pack(pady=15)
         hide_password_entry()
-    toggle_back_button(True)
+    toggle_back_button(False)
     
 
 # Fonction pour réinitialiser l'interface

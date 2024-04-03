@@ -39,7 +39,7 @@ dictionnaire = charger_dictionnaire(nom_fichier_dictionnaire)
 table_arc_en_ciel = creer_table_arc_en_ciel(dictionnaire, longueur_chaine, longueur_reduction, nombre_chaines)
 
 # Écrire la table arc-en-ciel dans un fichier texte
-nom_fichier_table_arc_en_ciel = "table_arc_en_ciel.txt"
+nom_fichier_table_arc_en_ciel = "table_Rainbow.txt"
 with open(nom_fichier_table_arc_en_ciel, 'w') as file:
     for mot_initial, hachage in table_arc_en_ciel.items():
         file.write(f"{mot_initial} {hachage}\n")
