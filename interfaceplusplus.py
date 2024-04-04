@@ -575,41 +575,7 @@ def get_current_datetime():
     now = datetime.now()
     date_time = now.strftime("%d/%m/%Y %H:%M:%S")
     return date_time
-'''
-# désactiver un button 
-def disable_button(button):
-    button.config(state='disabled')
 
-# Fonction pour lier les touches fléchées et la touche "Entrée" aux fonctions correspondantes des boutons
-def bind_keyboard_shortcuts():
-    root.bind_all("<Up>", select_previous_button)    # Flèche vers le haut pour sélectionner le bouton précédent
-    root.bind_all("<Down>", select_next_button)      # Flèche vers le bas pour sélectionner le bouton suivant
-    root.bind_all("<Return>", activate_selected_button)  # Touche "Entrée" pour activer le bouton sélectionné
-
-# Fonction pour sélectionner le bouton précédent
-def select_previous_button(event):
-    global current_button_index
-    current_button_index = (current_button_index - 1) % len(buttons)
-    highlight_button()
-
-# Fonction pour sélectionner le bouton suivant
-def select_next_button(event):
-    global current_button_index
-    current_button_index = (current_button_index + 1) % len(buttons)
-    highlight_button()
-
-# Fonction pour activer le bouton sélectionné
-def activate_selected_button(event):
-    buttons[current_button_index].invoke()
-
-# Fonction pour mettre en surbrillance le bouton sélectionné
-def highlight_button():
-    for index, button in enumerate(buttons):
-        if index == current_button_index:
-            button.config(bg="green")
-        else:
-            button.config(bg=BUTTON_COLOR)  
-'''
 # Configuration de la fenêtre principale
 root = tk.Tk()
 root.title("Attaques sur les mots de passes")
@@ -657,17 +623,7 @@ lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_CO
 lookup_table_button.pack(pady=10)
 test_mdp_button = Button(attack_buttons_frame, text="Tester votre mdp", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_password_test_interface)
 test_mdp_button.pack(pady=10)
-'''
-# Création des boutons
-buttons = [attack_dictionary_button, brute_force_button, rainbow_attack_button, lookup_table_button]
 
-# Index du bouton actuellement sélectionné
-current_button_index = 0
-highlight_button()
-
-# Lier les touches fléchées et la touche "Entrée" aux fonctions correspondantes des boutons
-bind_keyboard_shortcuts()
-'''
 # Label pour le mot de passe haché
 label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 
