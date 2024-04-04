@@ -1,46 +1,50 @@
-import tkinter as tk
-from tkinter import font
 import hashlib
 
-def submit_password():
-    hashed_password = password_entry.get()
-    with open(file_name, 'r') as file_to_check:
-        for line in file_to_check:
-            word = line.strip()
-            md5_returned = hashlib.md5(word.encode()).hexdigest()
-            if hashed_password == md5_returned:
-                result_label.config(text=f"Le mot de passe est {word}", fg="green", font=custom_font)
-                return
-        result_label.config(text="Mot de passe non trouvé. Changez de dictionnaire.", fg="red", font=custom_font)
+# Fonction de réduction
+def reduction_md5(hash_value):
+    hash_obj = hashlib.md5(hash_value.encode())
+    return hash_obj.hexdigest()
 
-# Création de la fenêtre principale
-root = tk.Tk()
-root.title("Déchiffrement de mot de passe")
-root.configure(bg="#212121")
+# Charger la table arc-en-ciel depuis le fichier
+rainbow_table = {}
 
-# Création d'un cadre pour contenir tous les éléments
-main_frame = tk.Frame(root, bg="#212121")  
-main_frame.pack(padx=20, pady=20)
+with open('hash_table.txt', 'r') as file:
+    for line in file:
+        start_hash, entry = line.strip().split(': ')
+        password, end_hash = entry.split(' -> ')
+        rainbow_table[start_hash] = (password, end_hash)
 
-# Création du champ de saisie pour le mot de passe hashé
-custom_font = font.Font(family="Helvetica", size=14, weight="bold")
-password_label = tk.Label(main_frame, text="Mot de passe hashé :", font=custom_font, bg="#212121", fg="white")
-password_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
+# Fonction pour retrouver le mot de passe à partir d'un hachage MD5
+def find_password(target_hash):
+    j=0
+    # Vérifier si le hachage cible correspond à un hachage initial
+    if target_hash in rainbow_table:
+        return rainbow_table[target_hash][0]
 
-password_entry = tk.Entry(main_frame, width=50, bg="#212121", fg="white", font=custom_font)
-password_entry.grid(row=0, column=1, sticky="w")
-password_entry.configure(insertbackground="white")  # Changement de la couleur du curseur
+    # Parcourir les chaînes de la table arc-en-ciel
+    for start_hash, (password, end_hash) in rainbow_table.items():
+        chain = [start_hash]
+        current_hash = start_hash
+        for _ in range(1000):
+            current_hash = reduction_md5(current_hash)
+            chain.append(current_hash)
+            if current_hash == target_hash:
+                # Reconstruire le mot de passe à partir de la chaîne
+                candidate=start_hash
+                for i in range(len(chain)-1):
+                    password=candidate
+                    candidate = hashlib.md5(chain[i].encode()).hexdigest()
+                return password
+                    
+            
+        j=j+1        
+    # Hachage non trouvé dans la table
+    return None
 
-# Création du bouton de soumission
-submit_font = font.Font(weight="bold")
-submit_button = tk.Button(main_frame, text="Soumettre", command=submit_password, bg="green", font=submit_font, width=10)
-submit_button.grid(row=1, column=1, sticky="w", pady=10)
-
-# Étiquette pour afficher le résultat
-result_label = tk.Label(main_frame, text="", bg="#212121", font=custom_font)
-result_label.grid(row=2, column=0, columnspan=2, pady=10)
-
-file_name = "mots.txt"  # Nom du fichier contenant le dictionnaire
-
-# Lancement de la boucle principale
-root.mainloop()
+# Exemple d'utilisation
+target_hash = input("Entrez un hachage MD5 : ")
+password = find_password(target_hash)
+if password:
+    print(f"Le mot de passe correspondant est : {password}")
+else:
+    print("Le mot de passe n'a pas été trouvé dans la table arc-en-ciel.")
