@@ -715,11 +715,11 @@ custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 
 # Frame principale avec une marge
 main_frame = tk.Frame(intro_frame, bg=BG_COLOR)
-main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+main_frame.grid(row=0, column=0, padx=20, pady=20,sticky="nsew")
 
 button_frame=tk.Frame(intro_frame,bg=BG_COLOR)
 button_frame.place(relx=0.5,rely=0.5,anchor='center')
-attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_attack_bouttons)
+attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(intro_frame,attack_buttons_frame))
 advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_advice)
 test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_password_test_interface)
 

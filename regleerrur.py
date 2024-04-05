@@ -557,8 +557,8 @@ def show_advice():
     global current_frame
     
     # Cacher les éléments de la frame précédente
-    if current_frame == intro_frame:
-        intro_frame.place_forget()
+    if current_frame == button_frame:
+        button_frame.place_forget()
     elif current_frame == main_frame:
         main_frame.place_forget()
     
@@ -665,19 +665,19 @@ root.geometry("+{}+{}".format(position_right, position_down))
 # Ajout d'une marge à côté des bordures
 root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(0, weight=1)
-
-# Frame principale avec une marge
 main_frame = tk.Frame(root, bg=BG_COLOR)
 main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
-
 # Nouvelle frame avant la frame principale
+'''''
 intro_frame = tk.Frame(root, bg=BG_COLOR)
 intro_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+'''
 custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 # Boutons dans la nouvelle frame
-button_frame=tk.Frame(intro_frame,bg=BG_COLOR)
+
+button_frame=tk.Frame(main_frame,bg=BG_COLOR)
 button_frame.place(relx=0.5,rely=0.5,anchor='center')
-attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(intro_frame, main_frame))
+attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(button_frame,attack_buttons_frame))
 advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_advice)
 test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_password_test_interface)
 
@@ -687,14 +687,17 @@ advice_button.pack(pady=10)
 test_password_button.pack(pady=10)
 
 def toggle_frames(hide_frame, show_frame):
-    hide_frame.grid_forget()
-    show_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+    
+    hide_frame.place_forget()
+    show_frame.place(relx=0.5, rely=0.5, anchor='center')
+
+
 # Police personnalisée
 custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 
 # Frame pour les boutons d'attaque
 attack_buttons_frame = tk.Frame(main_frame, bg=BG_COLOR)
-attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+
 
 # Boutons pour les différentes attaques
 attack_dictionary_button = Button(attack_buttons_frame, text="Attaque par dictionnaire", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_dictionary_attack)
@@ -781,7 +784,7 @@ retry_button_rainbow.pack(side=tk.LEFT, padx=10)
 # Label pour afficher la date et l'heure en haut à droite
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
 date_label.place(relx=1.0, rely=0, anchor='ne')
-date_label = tk.Label(intro_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
+date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
 date_label.place(relx=1.0, rely=0, anchor='ne')
 
 # Bouton "Retour" en bas à gauche
@@ -789,7 +792,7 @@ back_button = Button(main_frame, text="Retour", command=return_to_previous_scree
 root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
-back_button2 = Button(intro_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+back_button2 = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
@@ -799,14 +802,14 @@ style.theme_use("default")
 style.configure("Custom.Horizontal.TProgressbar", troughcolor=BG_COLOR, bordercolor=PROGRESS_COLOR, background=PROGRESS_COLOR, borderwidth=2)
 #les déclaration pour tester mot de passe:
 # Label et champ de saisie pour le mot de passe
-label_test_password = tk.Label(intro_frame, text="Entrez votre mot de passe :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-entry_test_password = tk.Entry(intro_frame, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, show="*")
+label_test_password = tk.Label(main_frame, text="Entrez votre mot de passe :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_test_password = tk.Entry(main_frame, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, show="*")
 
 # Bouton pour tester le mot de passe
-test_password_button = Button(intro_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=test_password)
+test_password_button = Button(main_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=test_password)
 
 # Frame et label pour afficher le résultat
-result_frame_test_password = tk.Frame(intro_frame, bg=BG_COLOR)
+result_frame_test_password = tk.Frame(main_frame, bg=BG_COLOR)
 result_label_test_password = tk.Label(result_frame_test_password, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 result_label_test_password.pack(side=tk.TOP, padx=10)
 reset_button_test_password = Button(result_frame_test_password, text="Réinitialiser", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=reset_password_test_interface)
