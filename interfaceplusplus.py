@@ -132,6 +132,12 @@ def toggle_back_button(show):
         back_button.place_forget()
         #back_button_brute_force.place_forget()
         #back_button_lookup_table.place_forget()
+def toggle_back_button2(show):
+    if show:
+        back_button2.place(relx=0, rely=1.0, anchor='sw')
+    else:
+        back_button2.place_forget()
+        
 
 # Fonction pour cacher toutes les frames
 
@@ -157,7 +163,8 @@ def hide_all_frames():
     result_label_rainbow.config(text="")
     password_label_rainbow.config(text="")
     retry_button_rainbow.pack_forget() 
-   
+def hide_all_framesnewframe():
+    button_frame.place_forget()   
 # Fonction pour cacher la frame de saisie du mot de passe haché
 def hide_password_entry():
     label_hashed_password.place_forget()
@@ -242,10 +249,15 @@ def return_to_previous_screen():
         result_frame_test_password.place_forget()
         result_label_test_password.place_forget()
         reset_button_test_password.place_forget()
-        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
-        current_frame = attack_buttons_frame
-        toggle_back_button(False)    
-    elif current_frame == attack_buttons_frame:
+        button_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = button_frame
+        toggle_back_button2(False)   
+    elif current_frame==attack_buttons_frame:
+        attack_buttons_frame.place_forget()
+        button_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = button_frame
+        toggle_back_button2(False) 
+    elif current_frame == button_frame:
         pass
 
 # Fonction pour cracker le mot de passe
@@ -499,8 +511,8 @@ def launch_rainbow_attack(entry_hashed_password):
     
 def show_password_test_interface():
     global current_frame
-    hide_all_frames()  # Cacher toutes les frames
-
+      # Cacher toutes les frames
+    hide_all_framesnewframe()
     # Afficher l'interface de test du mot de passe
     label_test_password.place(relx=0.5, rely=0.3, anchor='center')
     entry_test_password.place(relx=0.5, rely=0.4, anchor='center')
@@ -509,7 +521,7 @@ def show_password_test_interface():
     result_label_test_password.pack(pady=10)
     reset_button_test_password.pack_forget() 
     current_frame = result_frame_test_password
-    toggle_back_button(True)
+    toggle_back_button2(True)
 
 def test_password():
     global current_frame
@@ -541,6 +553,39 @@ def test_password():
     reset_button_test_password.pack(side=tk.LEFT, padx=10)  # Afficher le bouton "Réinitialiser"
     current_frame = result_frame_test_password
     toggle_back_button(False)
+def show_advice():
+    global current_frame
+    
+    # Cacher les éléments de la frame précédente
+    if current_frame == intro_frame:
+        intro_frame.place_forget()
+    elif current_frame == main_frame:
+        main_frame.place_forget()
+    
+    # Créer la frame pour les conseils
+    advice_frame = tk.Frame(root, bg=BG_COLOR)
+    advice_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
+    
+    # Titre
+    advice_title = tk.Label(advice_frame, text="Conseils pour un mot de passe sécurisé", fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
+    advice_title.place(relx=0.5, rely=0.1, anchor="center")
+    
+    # Conseils
+    advice_text = """
+    - Utilisez au moins 12 caractères
+    - Incluez des lettres majuscules, minuscules, des chiffres et des symboles
+    - Évitez les mots de passe courants ou facilement devinables
+    - Ne réutilisez pas le même mot de passe pour plusieurs comptes
+    - Changez régulièrement vos mots de passe
+    """
+    advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE), wraplength=450, justify="left")
+    advice_label.place(relx=0.5, rely=0.5, anchor="center")
+    
+    # Bouton de retour
+    toggle_back_button2(True)
+    
+    current_frame = advice_frame   
+    
 # Fonction pour réinitialiser l'interface
 def reset_password_test_interface():
     global current_frame
@@ -599,6 +644,7 @@ def get_current_datetime():
     return date_time
 
 # Configuration de la fenêtre principale
+
 root = tk.Tk()
 root.title("Attaques sur les mots de passes")
 root.configure(bg=BG_COLOR)
@@ -624,6 +670,25 @@ root.grid_columnconfigure(0, weight=1)
 main_frame = tk.Frame(root, bg=BG_COLOR)
 main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
+# Nouvelle frame avant la frame principale
+intro_frame = tk.Frame(root, bg=BG_COLOR)
+intro_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
+# Boutons dans la nouvelle frame
+button_frame=tk.Frame(intro_frame,bg=BG_COLOR)
+button_frame.place(relx=0.5,rely=0.5,anchor='center')
+attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(intro_frame, main_frame))
+advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_advice)
+test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_password_test_interface)
+
+
+attack_button.pack(pady=10)
+advice_button.pack(pady=10)
+test_password_button.pack(pady=10)
+
+def toggle_frames(hide_frame, show_frame):
+    hide_frame.grid_forget()
+    show_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 # Police personnalisée
 custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 
@@ -643,8 +708,6 @@ rainbow_attack_button.pack(pady=10)
 
 lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
-test_mdp_button = Button(attack_buttons_frame, text="Tester votre mdp", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_password_test_interface)
-test_mdp_button.pack(pady=10)
 
 # Label pour le mot de passe haché
 label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
@@ -718,9 +781,15 @@ retry_button_rainbow.pack(side=tk.LEFT, padx=10)
 # Label pour afficher la date et l'heure en haut à droite
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
 date_label.place(relx=1.0, rely=0, anchor='ne')
+date_label = tk.Label(intro_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
+date_label.place(relx=1.0, rely=0, anchor='ne')
 
 # Bouton "Retour" en bas à gauche
 back_button = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+root.bind("<Escape>", lambda event: back_button.invoke())
+back_button.place(relx=0, rely=1.0, anchor='sw')
+
+back_button2 = Button(intro_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
@@ -730,20 +799,21 @@ style.theme_use("default")
 style.configure("Custom.Horizontal.TProgressbar", troughcolor=BG_COLOR, bordercolor=PROGRESS_COLOR, background=PROGRESS_COLOR, borderwidth=2)
 #les déclaration pour tester mot de passe:
 # Label et champ de saisie pour le mot de passe
-label_test_password = tk.Label(main_frame, text="Entrez votre mot de passe :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-entry_test_password = tk.Entry(main_frame, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, show="*")
+label_test_password = tk.Label(intro_frame, text="Entrez votre mot de passe :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_test_password = tk.Entry(intro_frame, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, show="*")
 
 # Bouton pour tester le mot de passe
-test_password_button = Button(main_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=test_password)
+test_password_button = Button(intro_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=test_password)
 
 # Frame et label pour afficher le résultat
-result_frame_test_password = tk.Frame(main_frame, bg=BG_COLOR)
+result_frame_test_password = tk.Frame(intro_frame, bg=BG_COLOR)
 result_label_test_password = tk.Label(result_frame_test_password, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 result_label_test_password.pack(side=tk.TOP, padx=10)
 reset_button_test_password = Button(result_frame_test_password, text="Réinitialiser", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=reset_password_test_interface)
 reset_button_test_password.pack(side=tk.LEFT, padx=10)
+#conseil frame
+    # Conseils
 
-# Afficher le bouton "Retour" par défaut
 toggle_back_button(False)
 
 root.mainloop()
