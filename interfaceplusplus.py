@@ -132,12 +132,13 @@ def toggle_back_button(show):
         back_button.place_forget()
         #back_button_brute_force.place_forget()
         #back_button_lookup_table.place_forget()
+'''
 def toggle_back_button2(show):
     if show:
         back_button2.place(relx=0, rely=1.0, anchor='sw')
     else:
         back_button2.place_forget()
-        
+'''  
 
 # Fonction pour cacher toutes les frames
 
@@ -215,7 +216,7 @@ def return_to_previous_screen():
         start_brute_force_button.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
-        toggle_back_button(False)
+        toggle_back_button(True)
     elif current_frame == result_frame_lookup_table:
         back_button.place_forget()
         #back_button_lookup_table.place_forget()
@@ -227,7 +228,7 @@ def return_to_previous_screen():
         start_lookup_table_button.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
-        toggle_back_button(False)   
+        toggle_back_button(True)   
     elif current_frame == result_frame_rainbow:
         hide_password_entry()  
         result_frame_rainbow.place_forget()
@@ -236,12 +237,12 @@ def return_to_previous_screen():
         crack_button.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
-        toggle_back_button(False)   
+        toggle_back_button(True)   
     elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
-        toggle_back_button(False)  # Cacher le bouton "Retour"
+        toggle_back_button(True)  # Cacher le bouton "Retour"
     elif current_frame==result_frame_test_password:
         label_test_password.place_forget()
         entry_test_password.place_forget()
@@ -251,12 +252,12 @@ def return_to_previous_screen():
         reset_button_test_password.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
-        toggle_back_button2(False)   
+        toggle_back_button(False)   
     elif current_frame==attack_buttons_frame:
         attack_buttons_frame.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
-        toggle_back_button2(False) 
+        toggle_back_button(False) 
     elif current_frame == button_frame:
         pass
 
@@ -509,6 +510,44 @@ def launch_rainbow_attack(entry_hashed_password):
         hide_password_entry()
     toggle_back_button(False)
     
+    
+def show_attack_bouttons():
+    global current_frame
+    # Cacher toutes les frames
+    hide_all_framesnewframe()
+    attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+
+    # Boutons pour les différentes attaques
+    attack_dictionary_button.pack(pady=10)
+
+    brute_force_button.pack(pady=10)
+
+    rainbow_attack_button.pack(pady=10)
+
+    lookup_table_button.pack(pady=10)
+
+
+    result_label.pack(side=tk.LEFT, padx=10)
+    password_label.pack(side=tk.LEFT)
+    retry_button.pack(side=tk.LEFT, padx=10)
+    #declaration des frame de brut force j'ai testé les tiennes mais elle me génére pas les résultats que je veux puisque elle sont modelé pour tes fonctions alors j'ai crée les mienne sorry :(
+    # Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque par force brute
+    result_label_brute_force.pack(side=tk.LEFT, padx=10)
+    password_label_brute_force.pack(side=tk.LEFT)
+    retry_button_brute_force.pack(side=tk.LEFT, padx=10)
+
+    result_label_lookup_table.pack(side=tk.LEFT, padx=10)
+    password_label_lookup_table.pack(side=tk.LEFT)
+    retry_button_lookup_table.pack(side=tk.LEFT, padx=10)   
+
+    result_label_rainbow.pack(side=tk.LEFT, padx=10)
+    password_label_rainbow.pack(side=tk.LEFT)
+    retry_button_rainbow.pack(side=tk.LEFT, padx=10)
+
+
+    toggle_back_button(True)
+    
+    
 def show_password_test_interface():
     global current_frame
       # Cacher toutes les frames
@@ -521,7 +560,7 @@ def show_password_test_interface():
     result_label_test_password.pack(pady=10)
     reset_button_test_password.pack_forget() 
     current_frame = result_frame_test_password
-    toggle_back_button2(True)
+    toggle_back_button(True)
 
 def test_password():
     global current_frame
@@ -582,7 +621,7 @@ def show_advice():
     advice_label.place(relx=0.5, rely=0.5, anchor="center")
     
     # Bouton de retour
-    toggle_back_button2(True)
+    toggle_back_button(True)
     
     current_frame = advice_frame   
     
@@ -666,18 +705,21 @@ root.geometry("+{}+{}".format(position_right, position_down))
 root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
-# Frame principale avec une marge
-main_frame = tk.Frame(root, bg=BG_COLOR)
-main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
 # Nouvelle frame avant la frame principale
 intro_frame = tk.Frame(root, bg=BG_COLOR)
 intro_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 # Boutons dans la nouvelle frame
+
+
+# Frame principale avec une marge
+main_frame = tk.Frame(intro_frame, bg=BG_COLOR)
+main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
 button_frame=tk.Frame(intro_frame,bg=BG_COLOR)
 button_frame.place(relx=0.5,rely=0.5,anchor='center')
-attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(intro_frame, main_frame))
+attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_attack_bouttons)
 advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_advice)
 test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_password_test_interface)
 
@@ -785,14 +827,14 @@ date_label = tk.Label(intro_frame, text=get_current_datetime(), fg="#00FF00", bg
 date_label.place(relx=1.0, rely=0, anchor='ne')
 
 # Bouton "Retour" en bas à gauche
-back_button = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+back_button = Button(intro_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
-
+''''
 back_button2 = Button(intro_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
-
+'''
 # Style personnalisé pour la barre de progression
 style = ttk.Style()
 style.theme_use("default")
