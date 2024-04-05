@@ -235,6 +235,16 @@ def return_to_previous_screen():
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
         toggle_back_button(False)  # Cacher le bouton "Retour"
+    elif current_frame==result_frame_test_password:
+        label_test_password.place_forget()
+        entry_test_password.place_forget()
+        test_password_button.place_forget()
+        result_frame_test_password.place_forget()
+        result_label_test_password.place_forget()
+        reset_button_test_password.place_forget()
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = attack_buttons_frame
+        toggle_back_button(False)    
     elif current_frame == attack_buttons_frame:
         pass
 
@@ -355,40 +365,52 @@ def show_lookup_table():
     toggle_back_button(True)
 
 # Fonction de réduction
-def reduction(hachage, longueur=8):
-    return hachage[:longueur]
+def reduction(hash_value):
+    hash_obj = hashlib.md5(hash_value.encode())
+    return hash_obj.hexdigest()
+# Fonction pour retrouver le mot de passe à partir d'un hachage MD5
+def find_password(target_hash):
+    j=0
+    # Vérifier si le hachage cible correspond à un hachage initial
+    if target_hash in rainbow_table:
+        return rainbow_table[target_hash][0]
 
+    # Parcourir les chaînes de la table arc-en-ciel
+    for start_hash, (password, end_hash) in rainbow_table.items():
+        chain = [start_hash]
+        current_hash = start_hash
+        for _ in range(1000):
+            current_hash = reduction(current_hash)
+            chain.append(current_hash)
+            if current_hash == target_hash:
+                # Reconstruire le mot de passe à partir de la chaîne
+                candidate=start_hash
+                for i in range(len(chain)-1):
+                    password=candidate
+                    candidate = hashlib.md5(chain[i].encode()).hexdigest()
+                return password
+                    
+            
+    # Hachage non trouvé dans la table
+    return None
+rainbow_table = {}
 # Fonction pour effectuer une attaque Rainbow
 def run_rainbow(entry_rainbow):
-    hashed_password = entry_rainbow.get().strip()
+    target_hash = entry_rainbow.get().strip()
     # Charger la table arc-en-ciel depuis le fichier
-    table_arc_en_ciel = {}
-    with open('table_Rainbow.txt', 'r') as f:
-        for ligne in f:
-            #mot_de_passe, hachage = ligne.strip().split()
-            mot_de_passe, hachage = ligne.strip().split(' ', 1)
-            table_arc_en_ciel[hachage] = mot_de_passe
+    # Charger la table arc-en-ciel depuis le fichier
+    
+
+    with open('hash_table.txt', 'r') as file:
+        for line in file:
+            start_hash, entry = line.strip().split(': ')
+            password, end_hash = entry.split(' -> ')
+            rainbow_table[start_hash] = (password, end_hash)
 
     # Vérifier si le hachage cible est dans la table
-    if hashed_password in table_arc_en_ciel:
-        return table_arc_en_ciel[hashed_password]
-    else:
-        # Commencer par le hachage donné
-        hachage_courant = hashed_password
+    password = find_password(target_hash)
 
-        # Appliquer les étapes de l'attaque Rainbow
-        for _ in range(100):  # Nombre d'itérations dans la chaîne arc-en-ciel
-            # Réduction
-            chaine_reduite = reduction(hachage_courant,8)
-            h_chaine_reduite=md5(chaine_reduite)
-            # Vérifier si la chaîne réduite est dans la table
-            if h_chaine_reduite in table_arc_en_ciel:
-                return table_arc_en_ciel[h_chaine_reduite]
-
-            # Si la chaîne réduite n'est pas dans la table, hacher à nouveau
-            hachage_courant = h_chaine_reduite
-
-    return None
+    return password
 
 # Fonction pour afficher l'interface de l'attaque Rainbow
 def show_rainbow_attack_interface():
@@ -482,7 +504,7 @@ def show_password_test_interface():
     # Afficher l'interface de test du mot de passe
     label_test_password.place(relx=0.5, rely=0.3, anchor='center')
     entry_test_password.place(relx=0.5, rely=0.4, anchor='center')
-    test_password_button.place(relx=0.5, rely=0.5, anchor='center')
+    test_password_button.place(relx=0.5, rely=0.48, anchor='center')
     result_frame_test_password.place(relx=0.5, rely=0.6, anchor='center')
     result_label_test_password.pack(pady=10)
     reset_button_test_password.pack_forget() 
@@ -717,7 +739,7 @@ test_password_button = Button(main_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_
 # Frame et label pour afficher le résultat
 result_frame_test_password = tk.Frame(main_frame, bg=BG_COLOR)
 result_label_test_password = tk.Label(result_frame_test_password, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-result_label_test_password.pack()
+result_label_test_password.pack(side=tk.TOP, padx=10)
 reset_button_test_password = Button(result_frame_test_password, text="Réinitialiser", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=reset_password_test_interface)
 reset_button_test_password.pack(side=tk.LEFT, padx=10)
 
