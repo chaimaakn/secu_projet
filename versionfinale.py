@@ -399,6 +399,7 @@ def show_lookup_table():
 def reduction(hash_value):
     hash_obj = hashlib.md5(hash_value.encode())
     return hash_obj.hexdigest()
+
 # Fonction pour retrouver le mot de passe à partir d'un hachage MD5
 def find_password(target_hash):
     j=0
@@ -420,18 +421,17 @@ def find_password(target_hash):
                     password=candidate
                     candidate = hashlib.md5(chain[i].encode()).hexdigest()
                 return password
-                    
-            
+                         
     # Hachage non trouvé dans la table
     return None
+
 rainbow_table = {}
+
 # Fonction pour effectuer une attaque Rainbow
 def run_rainbow(entry_rainbow):
     target_hash = entry_rainbow.get().strip()
-    # Charger la table arc-en-ciel depuis le fichier
-    # Charger la table arc-en-ciel depuis le fichier
-    
 
+    # Charger la table arc-en-ciel depuis le fichier
     with open('hash_table.txt', 'r') as file:
         for line in file:
             start_hash, entry = line.strip().split(': ')
@@ -480,8 +480,6 @@ def launch_rainbow_attack(entry_hashed_password):
     # Cacher le champ de texte et le bouton "Cracker"
     label_rainbow.place_forget()
     entry_rainbow.place_forget()
-    #label_hashed_password.place_forget()
-    #entry_hashed_password.place_forget()
     crack_rainbow_button.place_forget()
     
     # Cacher le résultat précédent s'il y en a un
