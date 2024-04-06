@@ -101,6 +101,7 @@ def show_brute_force_interface():
     password_label_brute_force.pack(side="top", padx=10, pady=5)
     retry_button_brute_force.pack(pady=15)
     retry_button_brute_force.pack_forget()
+    brute_force_title.place(relx=0.5, rely=0.1, anchor="center")
     
     #back_button_brute_force.place(relx=0, rely=1.0, anchor='sw')
     current_frame = result_frame_brute_force
@@ -182,6 +183,7 @@ def show_dictionary_attack():
     # Afficher l'interface de l'attaque par dictionnaire
     label_hashed_password.place(relx=0.5, rely=0.30, anchor='center')
     entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
+    dic_title.place(relx=0.5, rely=0.1, anchor="center")
     crack_button.place(relx=0.5, rely=0.5, anchor='center')
     current_frame = label_hashed_password
     toggle_back_button(True)
@@ -210,6 +212,7 @@ def return_to_previous_screen():
         label_brute_force.place_forget()
         start_brute_force_button.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        brute_force_title.place_forget()
         current_frame = attack_buttons_frame
         toggle_back_button(True)
     elif current_frame == result_frame_lookup_table:
@@ -222,6 +225,7 @@ def return_to_previous_screen():
         label_lookup_table.place_forget()
         start_lookup_table_button.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        lookup_table_title.place_forget()
         current_frame = attack_buttons_frame
         toggle_back_button(True)   
     elif current_frame == result_frame_rainbow:
@@ -230,12 +234,14 @@ def return_to_previous_screen():
         entry_hashed_password.delete(0, tk.END) 
         label_hashed_password.place_forget() 
         crack_button.place_forget()
+        rainbow_title.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = attack_buttons_frame
         toggle_back_button(True)   
     elif current_frame in (label_hashed_password, entry_hashed_password, crack_button):
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        dic_title.place_forget()
         current_frame = attack_buttons_frame
         toggle_back_button(False)  # Cacher le bouton "Retour"
     elif current_frame==result_frame_test_password:
@@ -285,7 +291,7 @@ def crack_password():
     crack_button.place_forget()
     result_frame.place_forget()
 
-    with open("mots.txt", "r") as file:
+    with open("liste.txt", "r") as file:
         words = [line.strip() for line in file]
 
     progress_bar.config(maximum=100)
@@ -378,6 +384,7 @@ def show_lookup_table():
     retry_button_lookup_table.place(relx=0.5, rely=0.10, anchor='center')
     retry_button_lookup_table.pack(pady=15)
     retry_button_lookup_table.pack_forget()
+    lookup_table_title.place(relx=0.5, rely=0.1, anchor="center")
     
     #back_button_lookup_table.place(relx=0, rely=1.0, anchor='sw')
     current_frame = result_frame_lookup_table
@@ -449,6 +456,7 @@ def show_rainbow_attack_interface():
     retry_button_rainbow.pack(pady=15)
     retry_button_rainbow.pack_forget() 
     back_button.place(relx=0, rely=1.0, anchor='sw') 
+    rainbow_title.place(relx=0.5, rely=0.1, anchor="center")
     current_frame = result_frame_rainbow  
     toggle_back_button(True)
     
@@ -737,10 +745,12 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 # Bouton pour cracker le mot de passe
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 root.bind("<Return>", lambda event: crack_button.invoke())
-
+dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 #Declaration brut force 
 label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
+brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
+
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 #back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 root.bind("<Return>", lambda event: start_brute_force_button.invoke())
@@ -748,6 +758,7 @@ root.bind("<Return>", lambda event: start_brute_force_button.invoke())
 #Declaration lookup table 
 label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_lookup_table_button = Button(main_frame, text="Rechercher", command=run_lookup_table, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
+lookup_table_title=tk.Label(main_frame, text="Lookup table", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 entry_lookup_table = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 #back_button_lookup_table = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
 root.bind("<Return>", lambda event: start_lookup_table_button.invoke())
@@ -790,6 +801,7 @@ retry_button_lookup_table.pack(side=tk.LEFT, padx=10)
 
 # Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque Rainbow
 result_frame_rainbow = tk.Frame(main_frame, bg=BG_COLOR)
+rainbow_title=tk.Label(main_frame, text="Attaque arc en ciel", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 result_label_rainbow = tk.Label(result_frame_rainbow, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
 result_label_rainbow.pack(side=tk.LEFT, padx=10)
 password_label_rainbow = tk.Label(result_frame_rainbow, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
