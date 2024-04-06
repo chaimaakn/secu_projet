@@ -373,8 +373,9 @@ def show_lookup_table():
     entry_lookup_table.place(relx=0.5, rely=0.4, anchor='center')
     start_lookup_table_button.place(relx=0.5, rely=0.5, anchor='center') 
     result_frame_lookup_table.place(relx=0.5, rely=0.6, anchor='center')
-    result_label_lookup_table.pack(pady=10)
-    password_label_lookup_table.pack(side="top", padx=10, pady=5)
+    result_label_lookup_table.pack(pady=5)
+    password_label_lookup_table.pack(pady=5)
+    retry_button_lookup_table.place(relx=0.5, rely=0.10, anchor='center')
     retry_button_lookup_table.pack(pady=15)
     retry_button_lookup_table.pack_forget()
     
@@ -576,11 +577,15 @@ def show_advice():
     current_frame = advice_frame 
       
 def show_interface_md5():
+    global current_frame
+
     hide_all_frames()
     md5_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
     label_md5.place(relx=0.5, rely=0.3, anchor='center')
     entry_md5.place(relx=0.5, rely=0.4, anchor='center')
     md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
+    current_frame=md5_frame
+    toggle_back_button(True)
 def md5_function():
     global current_frame
     hide_all_frames()
@@ -682,10 +687,10 @@ custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 
 button_frame=tk.Frame(main_frame,bg=BG_COLOR)
 button_frame.place(relx=0.5,rely=0.5,anchor='center')
-attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(button_frame,attack_buttons_frame))
-advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_advice)
-test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_password_test_interface)
-md5_button = Button(button_frame, text="Convertisseur", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_interface_md5)
+attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(button_frame,attack_buttons_frame))
+advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR,command=show_advice)
+test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_password_test_interface)
+md5_button = Button(button_frame, text="Convertisseur", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_interface_md5)
 
 attack_button.pack(pady=10)
 advice_button.pack(pady=10)
@@ -693,9 +698,12 @@ test_password_button.pack(pady=10)
 md5_button.pack(pady=10)
 
 def toggle_frames(hide_frame, show_frame):
+    global current_frame
     
     hide_frame.place_forget()
     show_frame.place(relx=0.5, rely=0.5, anchor='center')
+    current_frame=attack_buttons_frame
+    toggle_back_button(True)
 
 
 # Police personnalisée
@@ -708,16 +716,16 @@ attack_buttons_frame = tk.Frame(main_frame, bg=BG_COLOR)
 
 
 # Boutons pour les différentes attaques
-attack_dictionary_button = Button(attack_buttons_frame, text="Attaque par dictionnaire", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_dictionary_attack)
+attack_dictionary_button = Button(attack_buttons_frame, text="Attaque par dictionnaire", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_dictionary_attack)
 attack_dictionary_button.pack(pady=10)
 
-brute_force_button = Button(attack_buttons_frame, text="Brute Force", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=show_brute_force_interface)
+brute_force_button = Button(attack_buttons_frame, text="Brute Force", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_brute_force_interface)
 brute_force_button.pack(pady=10)
 
-rainbow_attack_button = Button(attack_buttons_frame, text="Rainbow Attack", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_rainbow_attack_interface)
+rainbow_attack_button = Button(attack_buttons_frame, text="Rainbow Attack", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR,command=show_rainbow_attack_interface)
 rainbow_attack_button.pack(pady=10)
 
-lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=show_lookup_table)
+lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
 
 # Label pour le mot de passe haché
@@ -793,7 +801,7 @@ retry_button_rainbow.pack(side=tk.LEFT, padx=10)
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
 date_label.place(relx=1.0, rely=0, anchor='ne')
 # Bouton "Retour" en bas à gauche
-back_button = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
+back_button = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 root.bind("<Escape>", lambda event: back_button.invoke())
 back_button.place(relx=0, rely=1.0, anchor='sw')
 
@@ -807,17 +815,17 @@ label_test_password = tk.Label(main_frame, text="Entrez votre mot de passe :", f
 entry_test_password = tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, show="*")
 
 # Bouton pour tester le mot de passe
-test_password_button = Button(main_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=test_password)
+test_password_button = Button(main_frame, text="Tester", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=test_password)
 
 # Frame et label pour afficher le résultat
 result_frame_test_password = tk.Frame(main_frame, bg=BG_COLOR)
 result_label_test_password = tk.Label(result_frame_test_password, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 result_label_test_password.pack(side=tk.TOP, padx=10)
-reset_button_test_password = Button(result_frame_test_password, text="Réinitialiser", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR, command=reset_password_test_interface)
+reset_button_test_password = Button(result_frame_test_password, text="Réinitialiser", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=reset_password_test_interface)
 reset_button_test_password.pack(side=tk.LEFT, padx=10)
 #conseil frame
 advice_frame = tk.Frame(main_frame, bg=BG_COLOR)
-advice_title = tk.Label(advice_frame, text="Conseils pour un mot de passe sécurisé", fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
+advice_title = tk.Label(advice_frame, text="Conseils pour un mot de passe sécurisé", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 advice_text = """
     - Utilisez au moins 12 caractères
     - Incluez des lettres majuscules, minuscules, des chiffres et des symboles
@@ -831,7 +839,7 @@ md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
 entry_md5=tk.Entry(md5_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_md5=tk.Label(md5_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_result_md5=tk.Label(md5_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activebackground=BUTTON_ACTIVE_COLOR,command=md5_function)
+md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
 
 
 toggle_back_button(False)
