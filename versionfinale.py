@@ -33,6 +33,14 @@ def blink_dots(label, delay=500):
 
     show_dots("...")
 
+def handle_shortcuts(event):
+    if event.keysym == 'c' and event.state == 4:  # Ctrl+C
+        event.widget.event_generate("<<Copy>>")
+    elif event.keysym == 'v' and event.state == 4:  # Ctrl+V
+        event.widget.event_generate("<<Paste>>")
+    elif event.keysym == 'a' and event.state == 4:  # Ctrl+A
+        event.widget.event_generate("<<SelectAll>>")
+
 
 
 
@@ -862,5 +870,10 @@ md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,fon
 
 
 toggle_back_button(False)
+
+root.bind_class("Entry", "<Control-c>", handle_shortcuts)
+root.bind_class("Entry", "<Control-v>", handle_shortcuts)
+root.bind_class("Entry", "<Control-a>", handle_shortcuts)
+
 
 root.mainloop()
