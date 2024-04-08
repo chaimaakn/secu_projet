@@ -870,10 +870,10 @@ md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,fon
 
 
 toggle_back_button(False)
-
+''''
 root.bind_class("Entry", "<Control-c>", handle_shortcuts)
 root.bind_class("Entry", "<Control-v>", handle_shortcuts)
 root.bind_class("Entry", "<Control-a>", handle_shortcuts)
-
+'''
 
 root.mainloop()
