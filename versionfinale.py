@@ -248,7 +248,7 @@ def return_to_previous_screen():
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         dic_title.place_forget()
         current_frame = attack_buttons_frame
-        toggle_back_button(False)  # Cacher le bouton "Retour"
+        toggle_back_button(True)  # Cacher le bouton "Retour"
     elif current_frame==result_frame_test_password:
         label_test_password.place_forget()
         entry_test_password.place_forget()
