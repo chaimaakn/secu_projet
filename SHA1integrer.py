@@ -148,7 +148,6 @@ def show_brute_force_interface():
     retry_button_brute_force.pack_forget()
     brute_force_title.place(relx=0.5, rely=0.1, anchor="center")
     
-    #back_button_brute_force.place(relx=0, rely=1.0, anchor='sw')
     current_frame = result_frame_brute_force
     toggle_back_button(True)
     
@@ -177,9 +176,6 @@ def toggle_back_button(show):
         back_button.place(relx=0, rely=1.0, anchor='sw')
     else:
         back_button.place_forget()
-        #back_button_brute_force.place_forget()
-        #back_button_lookup_table.place_forget()
-
         
 
 # Fonction pour cacher toutes les frames
@@ -457,7 +453,6 @@ def show_lookup_table():
     retry_button_lookup_table.pack_forget()
     lookup_table_title.place(relx=0.5, rely=0.1, anchor="center")
     
-    #back_button_lookup_table.place(relx=0, rely=1.0, anchor='sw')
     current_frame = result_frame_lookup_table
     toggle_back_button(True)
 
