@@ -967,3 +967,11 @@ root.bind_class("Entry", "<Control-v>", handle_shortcuts)
 root.bind_class("Entry", "<Control-a>", handle_shortcuts)'''
 
 root.mainloop()
+
+
+'''
+wech mazal f sha1 bach manansach :
+ -> brute force 
+ -> creation de la lookup table
+ -> convertisseur : je veux utiliser la choix_fct_frame mais jsp si ca marche
+'''
