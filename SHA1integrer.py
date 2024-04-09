@@ -89,7 +89,12 @@ def md5(mot):
 
 # Fonction pour tester si un mot correspond au hachage
 def est_bon_mot(mot, hash_a_trouver):
-    return md5(mot) == hash_a_trouver
+    global dernier_bouton_clique
+    if dernier_bouton_clique==1:
+        return md5(mot) == hash_a_trouver
+    else:
+        return sha1(mot) == hash_a_trouver
+    
 
 # Fonction pour trouver le bon mot
 def trouver_bon_mot(hash_a_trouver):
@@ -113,16 +118,21 @@ def trouver_bon_mot(hash_a_trouver):
 
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
 def retrouver_mot(hash_input):
+    global dernier_bouton_clique
     
-    if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
-        print("Le hash entré n'est pas valide.")
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
+    if dernier_bouton_clique==1:
+        if message_box_md5(hash_input)==True:
+            return
+    else:
+        if message_box_sha1(hash_input)==True:
+            return
+    
     bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
     if bon_mot_trouve:
         
         retry_button_brute_force.pack(side=tk.LEFT, padx=10)
         result_label_brute_force.config(text=f"Le mot est: {bon_mot_trouve} \n trouvé en {temps_ecoule:.6f} secondes", fg=FG_COLOR)
+        toggle_back_button(False)
 
         
     else:
@@ -141,7 +151,7 @@ def show_brute_force_interface():
     label_brute_force.place(relx=0.5, rely=0.3, anchor='center')
     entry_brut_force.place(relx=0.5, rely=0.4, anchor='center')
     start_brute_force_button.place(relx=0.5, rely=0.5, anchor='center') 
-    result_frame_brute_force.place(relx=0.5, rely=0.6, anchor='center')
+    result_frame_brute_force.place(relx=0.5, rely=0.7, anchor='center')
     result_label_brute_force.pack(pady=10)
     password_label_brute_force.pack(side="top", padx=10, pady=5)
     retry_button_brute_force.pack(pady=15)
@@ -412,7 +422,7 @@ def run_lookup_table():
         with open("password_dict.pkl", "rb") as file:
          password_dic = pickle.load(file)
     else:
-        with open("password_dict_sha1.pkl", "rb") as file: # !!!creation de la lookup table avec sha1
+        with open("password_dict_sha1.pkl", "rb") as file:
          password_dic = pickle.load(file)
 
     if hashed_password in password_dic:
@@ -971,7 +981,5 @@ root.mainloop()
 
 '''
 wech mazal f sha1 bach manansach :
- -> brute force 
- -> creation de la lookup table
  -> convertisseur : je veux utiliser la choix_fct_frame mais jsp si ca marche
 '''
