@@ -833,10 +833,10 @@ convertisseur_frame = tk.Frame(root, bg=BG_COLOR)
 title_label = tk.Label(convertisseur_frame, text="Choisissez une fonction de hachage ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
 title_label.pack()
 
-md5_button = Button(convertisseur_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(convertisseur_frame,md5_frame))
+md5_button = Button(convertisseur_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(convertisseur_frame,md5_frame))
 md5_button.pack(pady=10)
 
-sha1_button = Button(convertisseur_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(convertisseur_frame,sha1_frame))
+sha1_button = Button(convertisseur_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(convertisseur_frame,sha1_frame))
 sha1_button.pack(pady=10)
 
 # l'interface du choix de la fonction de hachage
@@ -845,11 +845,11 @@ choix_fct_frame = tk.Frame(root, bg=BG_COLOR)
 title_label = tk.Label(choix_fct_frame, text="Choisissez une fonction de hachage ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
 title_label.pack()
 
-md5_fct_button = Button(choix_fct_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
+md5_fct_button = Button(choix_fct_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
 md5_fct_button.bind("<Button-1>",bouton1_clique)
 md5_fct_button.pack(pady=10)
 
-sha1_fct_button = Button(choix_fct_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
+sha1_fct_button = Button(choix_fct_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
 sha1_fct_button.bind("<Button-1>",bouton2_clique)
 sha1_fct_button.pack(pady=10)
 
