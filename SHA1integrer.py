@@ -712,6 +712,7 @@ def md5_function():
     label_result_md5.config(text="Hachage md5:\n"+md5(password))
     label_result_md5.place(relx=0.5,rely=0.6,anchor='center')
     pyperclip.copy(md5(password))
+    label_copie.place(relx=0.5,rely=0.8,anchor='center')
     current_frame=md5_frame
     toggle_back_button(True)
 def show_interface_sha1():
@@ -732,6 +733,7 @@ def sha1_function():
     label_result_sha1.config(text="Hachage sha1:\n"+sha1(password))
     label_result_sha1.place(relx=0.5,rely=0.6,anchor='center')
     pyperclip.copy(sha1(password))
+    label_copie_sha1.place(relx=0.5,rely=0.8,anchor='center')
     current_frame=sha1_frame
     toggle_back_button(True)
 
@@ -1019,13 +1021,13 @@ label_md5.place(relx=0.5, rely=0.3, anchor='center')
 label_result_md5=tk.Label(md5_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
 md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
-
+label_copie=tk.Label(md5_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
 sha1_frame= tk.Frame(main_frame, bg=BG_COLOR)
 entry_sha1=tk.Entry(sha1_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_sha1=tk.Label(sha1_frame, text="entrez le mot que vous voulez haché en sha1", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_result_sha1=tk.Label(sha1_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 sha1_search_button=Button(sha1_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha1_function)
-
+label_copie_sha1=tk.Label(sha1_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
 toggle_back_button(False)
 
 '''root.bind_class("Entry", "<Control-c>", handle_shortcuts)
