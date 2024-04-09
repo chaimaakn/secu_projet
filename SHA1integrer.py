@@ -412,7 +412,7 @@ def run_lookup_table():
         with open("password_dict.pkl", "rb") as file:
          password_dic = pickle.load(file)
     else:
-        with open("password_dict2.pkl", "rb") as file: # !!!creation de la lookup table avec sha1
+        with open("password_dict_sha1.pkl", "rb") as file: # !!!creation de la lookup table avec sha1
          password_dic = pickle.load(file)
 
     if hashed_password in password_dic:
