@@ -329,17 +329,17 @@ def return_to_previous_screen():
         convertisseur_frame.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
-        toggle_back_button(False) 
+        toggle_back_button(True) 
     elif current_frame==md5_frame:
         md5_frame.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
-        toggle_back_button(False) 
+        toggle_back_button(True) 
     elif current_frame==sha1_frame:
         sha1_frame.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
-        toggle_back_button(False) 
+        toggle_back_button(True) 
     elif current_frame == button_frame:
         pass
 
@@ -693,33 +693,45 @@ def show_advice():
     toggle_back_button(True)
     current_frame = advice_frame 
       
-'''def show_interface_md5():
+def show_interface_md5():
     global current_frame
-
+    
     hide_all_frames()
     md5_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
     label_md5.place(relx=0.5, rely=0.3, anchor='center')
     entry_md5.place(relx=0.5, rely=0.4, anchor='center')
     md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
     current_frame=md5_frame
-    toggle_back_button(True)'''
+    toggle_back_button(True)
+   
+    
 def md5_function():
     global current_frame
-    hide_all_frames()
+    
     password=entry_md5.get().strip()
     label_result_md5.config(text="Hachage md5:"+md5(password))
-    pyperclip.copy(md5(password))
     label_result_md5.place(relx=0.5,rely=0.6,anchor='center')
+    pyperclip.copy(md5(password))
     current_frame=md5_frame
     toggle_back_button(True)
-
+def show_interface_sha1():
+    global current_frame
+    
+    hide_all_frames()
+    sha1_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
+    label_sha1.place(relx=0.5, rely=0.3, anchor='center')
+    entry_sha1.place(relx=0.5, rely=0.4, anchor='center')
+    sha1_search_button.place(relx=0.5, rely=0.48, anchor='center')
+    current_frame=sha1_frame
+    toggle_back_button(True)
+    
 def sha1_function():
     global current_frame
-    hide_all_frames()
+    
     password=entry_sha1.get().strip()
     label_result_sha1.config(text="Hachage sha1:"+sha1(password))
+    label_result_sha1.place(relx=0.5,rely=0.6,anchor='center')
     pyperclip.copy(sha1(password))
-    label_result_md5.place(relx=0.5,rely=0.6,anchor='center')
     current_frame=sha1_frame
     toggle_back_button(True)
 
@@ -828,15 +840,16 @@ test_password_button.pack(pady=10)
 convertisseur.pack(pady=10)
 
 # l'interface du choix de la fonction de hachage pour convertisseur
-convertisseur_frame = tk.Frame(root, bg=BG_COLOR)
+convertisseur_frame = tk.Frame(main_frame, bg=BG_COLOR)
 
 title_label = tk.Label(convertisseur_frame, text="Choisissez une fonction de hachage ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
-title_label.pack()
+title_label.pack(pady=10)
 
-md5_button = Button(convertisseur_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(convertisseur_frame,md5_frame))
+#md5_button = Button(convertisseur_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(convertisseur_frame,md5_frame))
+md5_button = Button(convertisseur_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activeforeground=ACCENT_COLOR,command=show_interface_md5)
 md5_button.pack(pady=10)
 
-sha1_button = Button(convertisseur_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(convertisseur_frame,sha1_frame))
+sha1_button = Button(convertisseur_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activeforeground=ACCENT_COLOR, command=show_interface_sha1)
 sha1_button.pack(pady=10)
 
 # l'interface du choix de la fonction de hachage
@@ -1000,9 +1013,12 @@ advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR
 #déclaration des frames du convertisseur:
 md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
 entry_md5=tk.Entry(md5_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_md5.place(relx=0.5, rely=0.4, anchor='center')
 label_md5=tk.Label(md5_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_md5.place(relx=0.5, rely=0.3, anchor='center')
 label_result_md5=tk.Label(md5_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
+md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
 
 sha1_frame= tk.Frame(main_frame, bg=BG_COLOR)
 entry_sha1=tk.Entry(sha1_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
