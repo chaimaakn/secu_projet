@@ -25,6 +25,21 @@ FONT_SIZE = 14
 # Frame actuellement affichée
 current_frame = None
 
+# Initialiser une variable globale pour stocker le dernier bouton cliqué
+dernier_bouton_clique = None
+
+# Fonction appelée lors du clic sur le bouton 1
+def bouton1_clique(event):
+    global dernier_bouton_clique
+    dernier_bouton_clique = 1
+    # Instructions spécifiques pour le bouton 1
+
+# Fonction appelée lors du clic sur le bouton 2
+def bouton2_clique(event):
+    global dernier_bouton_clique
+    dernier_bouton_clique = 2
+    # Instructions spécifiques pour le bouton 2
+
 # Fonction pour faire clignoter les points
 def blink_dots(label, delay=500):
     def show_dots(dots):
@@ -33,57 +48,40 @@ def blink_dots(label, delay=500):
 
     show_dots("...")
 
+def handle_shortcuts(event):
+    if event.keysym == 'c' and event.state == 4:  # Ctrl+C
+        event.widget.event_generate("<<Copy>>")
+    elif event.keysym == 'v' and event.state == 4:  # Ctrl+V
+        event.widget.event_generate("<<Paste>>")
+    elif event.keysym == 'a' and event.state == 4:  # Ctrl+A
+        event.widget.event_generate("<<SelectAll>>")
+
 CARACTERES = string.ascii_letters + string.digits + string.punctuation
 
 # Fonction pour calculer le hachage SHA1 d'un mot
 def sha1(mot):
     return hashlib.sha1(mot.encode()).hexdigest()
 
-# Fonction pour tester si un mot correspond au hachage SHA1
-def est_bon_mot_sha1(mot, hash_a_trouver):
-    return sha1(mot) == hash_a_trouver
-
-# Fonction pour trouver le bon mot correspondant à un hachage SHA1
-def trouver_bon_mot_sha1(hash_a_trouver):
-    longueur = 1
-    start_time = time.time()  # Enregistrer le temps de départ
-    mots_testes = 0
-    while True:
-        for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
-            mots_testes += 1
-            if mots_testes % 10000 == 0:
-                print(f"Mots testés : {mots_testes}")
-                sys.stdout.flush()
-             
-            if est_bon_mot_sha1(mot, hash_a_trouver):
-                end_time = time.time()  # Enregistrer le temps de fin
-                temps_ecoule = end_time - start_time
-                return mot, temps_ecoule
-            result_label_brute_force.config(text=f" {mot}",fg=FG_COLOR)
-            root.update()    
-        longueur += 1
-
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
-def retrouver_mot_sha1(hash_input):
-    if len(hash_input) != 40 or not all(c in string.hexdigits for c in hash_input):
+def message_box_sha1(hashed_password):
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    if len(hashed_password) != 40 or not all(c in string.hexdigits for c in hashed_password):
         print("Le hash entré n'est pas valide.")
         messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    bon_mot_trouve, temps_ecoule = trouver_bon_mot_sha1(hash_input)
-    if bon_mot_trouve:
-        retry_button_brute_force.pack(side=tk.LEFT, padx=10)
-        result_label_brute_force.config(text=f"Le mot est: {bon_mot_trouve} \n trouvé en {temps_ecoule:.6f} secondes", fg=FG_COLOR)
-    else:
-        messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
+        return True
+    return False
 
-
-def attaquer_md5():
-    # Code pour lancer l'attaque MD5
-    pass
-
-def attaquer_sha1():
-    # Code pour lancer l'attaque SHA1
-    pass
+def message_box_md5(hashed_password):
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
+        print("Le hash entré n'est pas valide.")
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    return False
 
 # Fonction pour calculer le hachage MD5 d'un mot
 def md5(mot):
@@ -255,7 +253,6 @@ def return_to_previous_screen():
         show_dictionary_attack()
     elif current_frame == result_frame_brute_force:
         back_button.place_forget()
-        #back_button_brute_force.place_forget()
         result_frame_brute_force.place_forget()
         result_label_brute_force.place_forget()
         password_label_brute_force.place_forget
@@ -268,7 +265,6 @@ def return_to_previous_screen():
         toggle_back_button(True)
     elif current_frame == result_frame_lookup_table:
         back_button.place_forget()
-        #back_button_lookup_table.place_forget()
         result_frame_lookup_table.place_forget()
         result_label_lookup_table.place_forget()
         password_label_lookup_table.place_forget
@@ -317,25 +313,32 @@ def return_to_previous_screen():
         toggle_back_button(False) 
     elif current_frame== attack_buttons_frame:
         attack_buttons_frame.place_forget()
+        choix_fct_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = choix_fct_frame
+        toggle_back_button(True) 
+    elif current_frame==choix_fct_frame:
+        choix_fct_frame.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
         toggle_back_button(False) 
     elif current_frame == button_frame:
         pass
 
+
+   
 # Fonction pour cracker le mot de passe
 def crack_password():
-    global current_frame, current_progress
+    global current_frame, current_progress, dernier_bouton_clique
     hashed_password = entry_hashed_password.get().strip()
-    if not hashed_password:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
-        print("Le hash entré n'est pas valide.")
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    hide_all_frames()  # Cacher toutes les frames
-   
+    
+    if dernier_bouton_clique==1:
+        if message_box_md5(hashed_password)==True:
+            return
+    else:
+        if message_box_sha1(hashed_password)==True:
+            return
+    
+    hide_all_frames()
     # Cacher tous les widgets sauf la barre de progression et le label clignotant
     label_hashed_password.place_forget()
     entry_hashed_password.place_forget()
@@ -366,16 +369,29 @@ def crack_password():
     progress_bar.place_forget()  # Cacher la barre de progression
     percentage_label.place_forget()  # Cacher le label de pourcentage
     blink_label.place_forget()  # Cacher le label clignotant
-    if current_frame==progress_bar:
-        for word in words:
-            md5_hash = hashlib.md5(word.encode()).hexdigest()
-            if hashed_password == md5_hash:
-                result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                password_label.config(text=word, fg=ACCENT_COLOR)
-                result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                current_frame = result_frame
-                toggle_back_button(False)
-                return
+
+    if current_frame == progress_bar:
+        if dernier_bouton_clique == 1:
+            for word in words:
+                md5_hash = hashlib.md5(word.encode()).hexdigest()
+                if hashed_password == md5_hash:
+                    result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                    password_label.config(text=word, fg=ACCENT_COLOR)
+                    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                    current_frame = result_frame
+                    toggle_back_button(False)
+                    return
+        else:
+            for word in words:
+                sha1_hash = hashlib.sha1(word.encode()).hexdigest()
+                if hashed_password == sha1_hash:
+                    result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                    password_label.config(text=word, fg=ACCENT_COLOR)
+                    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                    current_frame = result_frame
+                    toggle_back_button(False)
+                    return
+
 
         result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
         password_label.config(text="")
@@ -385,18 +401,22 @@ def crack_password():
     
 #fonction pour l'attaque lookup table 
 def run_lookup_table():
-    global current_frame, current_progress
+    global current_frame, current_progress,dernier_bouton_clique
     hashed_password = entry_lookup_table.get().strip()
-    if not hashed_password:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
-        print("Le hash entré n'est pas valide.")
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    hide_all_frames()
 
-    with open("password_dict.pkl", "rb") as file:
+    if dernier_bouton_clique==1:
+        if message_box_md5(hashed_password)==True:
+            return
+    else:
+        if message_box_sha1(hashed_password)==True:
+            return
+        
+    hide_all_frames()
+    if dernier_bouton_clique==1:
+        with open("password_dict.pkl", "rb") as file:
+         password_dic = pickle.load(file)
+    else:
+        with open("password_dict2.pkl", "rb") as file: # !!!creation de la lookup table avec sha1
          password_dic = pickle.load(file)
 
     if hashed_password in password_dic:
@@ -442,12 +462,17 @@ def show_lookup_table():
     toggle_back_button(True)
 
 # Fonction de réduction
-def reduction(hash_value):
+def reduction_md5(hash_value):
     hash_obj = hashlib.md5(hash_value.encode())
+    return hash_obj.hexdigest()
+
+def reduction_sha1(hash_value):
+    hash_obj = hashlib.sha1(hash_value.encode())
     return hash_obj.hexdigest()
 
 # Fonction pour retrouver le mot de passe à partir d'un hachage MD5
 def find_password(target_hash):
+    global dernier_bouton_clique
     j=0
     # Vérifier si le hachage cible correspond à un hachage initial
     if target_hash in rainbow_table:
@@ -458,15 +483,23 @@ def find_password(target_hash):
         chain = [start_hash]
         current_hash = start_hash
         for _ in range(1000):
-            current_hash = reduction(current_hash)
+            if dernier_bouton_clique==1:
+               current_hash = reduction_md5(current_hash)
+            else:
+                current_hash = reduction_sha1(current_hash)
             chain.append(current_hash)
             if current_hash == target_hash:
                 # Reconstruire le mot de passe à partir de la chaîne
                 candidate=start_hash
-                for i in range(len(chain)-1):
-                    password=candidate
-                    candidate = hashlib.md5(chain[i].encode()).hexdigest()
-                return password
+                if dernier_bouton_clique==1:
+                   for i in range(len(chain)-1):
+                       password=candidate
+                       candidate = hashlib.md5(chain[i].encode()).hexdigest()
+                else: 
+                    for i in range(len(chain)-1):
+                       password=candidate
+                       candidate = hashlib.md5(chain[i].encode()).hexdigest()
+                return password  
                          
     # Hachage non trouvé dans la table
     return None
@@ -478,11 +511,19 @@ def run_rainbow(entry_rainbow):
     target_hash = entry_rainbow.get().strip()
 
     # Charger la table arc-en-ciel depuis le fichier
-    with open('hash_table.txt', 'r') as file:
-        for line in file:
-            start_hash, entry = line.strip().split(': ')
-            password, end_hash = entry.split(' -> ')
-            rainbow_table[start_hash] = (password, end_hash)
+
+    if dernier_bouton_clique==1:
+        with open('hash_table.txt', 'r') as file:
+            for line in file:
+                start_hash, entry = line.strip().split(': ')
+                password, end_hash = entry.split(' -> ')
+                rainbow_table[start_hash] = (password, end_hash)
+    else:
+        with open('hash_table_sha1.txt', 'r') as file:
+            for line in file:
+                start_hash, entry = line.strip().split(': ')
+                password, end_hash = entry.split(' -> ')
+                rainbow_table[start_hash] = (password, end_hash)
 
     # Vérifier si le hachage cible est dans la table
     password = find_password(target_hash)
@@ -515,14 +556,14 @@ def show_rainbow_attack_interface():
 def launch_rainbow_attack(entry_hashed_password):
     global current_frame, current_progress
     hashed_password = entry_hashed_password.get().strip()
+
+    if dernier_bouton_clique==1:
+        if message_box_md5(hashed_password)==True:
+            return
+    elif dernier_bouton_clique==2:
+        if message_box_sha1(hashed_password)==True:
+            return
     
-    if not hashed_password:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
-    if len(hashed_password) != 32 or not all(c in string.hexdigits for c in hashed_password):
-        print("Le hash entré n'est pas valide.")
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
-        return
     # Cacher le champ de texte et le bouton "Cracker"
     label_rainbow.place_forget()
     entry_rainbow.place_forget()
@@ -758,23 +799,27 @@ md5_button.pack(pady=10)
 
 # l'interface du choix de la fonction de hachage
 choix_fct_frame = tk.Frame(root, bg=BG_COLOR)
-#choix_fct_frame.pack(pady=10)
 
-title_label = tk.Label(choix_fct_frame, text="Choisissez une attaque", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
+title_label = tk.Label(choix_fct_frame, text="Choisissez une fonction de hachage ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
 title_label.pack()
 
-md5_button = Button(choix_fct_frame, text="Attaque MD5", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=attaquer_md5)
-md5_button.pack(pady=10)
+#md5_button = Button(choix_fct_frame, text="Attaque MD5", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda:num_attaque(1))
+#md5_button.bind("<Button-1>",show_dictionary_attack)
+md5_fct_button = Button(choix_fct_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
+md5_fct_button.bind("<Button-1>",bouton1_clique)
+md5_fct_button.pack(pady=10)
 
-sha1_button = Button(choix_fct_frame, text="Attaque SHA1", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=attaquer_sha1)
-sha1_button.pack(pady=10)
+#sha1_button = Button(choix_fct_frame, text="Attaque SHA1", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda:num_attaque(2))
+sha1_fct_button = Button(choix_fct_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
+sha1_fct_button.bind("<Button-1>",bouton2_clique)
+sha1_fct_button.pack(pady=10)
 
 def toggle_frames(hide_frame, show_frame):
     global current_frame
     
     hide_frame.place_forget()
     show_frame.place(relx=0.5, rely=0.5, anchor='center')
-    current_frame=attack_buttons_frame
+    current_frame=show_frame
     toggle_back_button(True)
 
 
@@ -785,6 +830,7 @@ custom_font = font.Font(family=FONT_FAMILY, size=FONT_SIZE)
 attack_buttons_frame = tk.Frame(main_frame, bg=BG_COLOR)
 
 # Boutons pour les différentes attaques
+
 attack_dictionary_button = Button(attack_buttons_frame, text="Attaque par dictionnaire", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_dictionary_attack)
 attack_dictionary_button.pack(pady=10)
 
@@ -797,6 +843,7 @@ rainbow_attack_button.pack(pady=10)
 lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
 
+
 # Label pour le mot de passe haché
 label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 
@@ -805,7 +852,7 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 
 # Bouton pour cracker le mot de passe
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-root.bind("<Return>", lambda event: crack_button.invoke())
+#root.bind("<Return>", lambda event: crack_button.invoke())
 dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 #Declaration brut force 
 label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
@@ -813,22 +860,20 @@ start_brute_force_button = Button(main_frame, text="Rechercher", command=run_bru
 brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-#back_button_brute_force = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
-root.bind("<Return>", lambda event: start_brute_force_button.invoke())
+#root.bind("<Return>", lambda event: start_brute_force_button.invoke())
 
 #Declaration lookup table 
 label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_lookup_table_button = Button(main_frame, text="Rechercher", command=run_lookup_table, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 lookup_table_title=tk.Label(main_frame, text="Lookup table", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 entry_lookup_table = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-#back_button_lookup_table = Button(main_frame, text="Retour", command=return_to_previous_screen, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activebackground=BUTTON_ACTIVE_COLOR)
-root.bind("<Return>", lambda event: start_lookup_table_button.invoke())
+#root.bind("<Return>", lambda event: start_lookup_table_button.invoke())
 
 #declaration rainbow
 label_rainbow = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 entry_rainbow = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 crack_rainbow_button = Button(main_frame, text="Craquer le mot de passe", command=lambda:launch_rainbow_attack(entry_rainbow), fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-root.bind("<Return>", lambda event: crack_rainbow_button.invoke())
+#root.bind("<Return>", lambda event: crack_rainbow_button.invoke())
 
 # Barre de progression
 progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
@@ -847,7 +892,7 @@ password_label = tk.Label(result_frame, bg=BG_COLOR, font=custom_font, fg=ACCENT
 password_label.pack(side=tk.LEFT)
 retry_button = Button(result_frame, text="Nouvelle tentative", command=retry, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button.pack(side=tk.LEFT, padx=10)
-#declaration des frame de brut force j'ai testé les tiennes mais elle me génére pas les résultats que je veux puisque elle sont modelé pour tes fonctions alors j'ai crée les mienne sorry :(
+
 # Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque par force brute
 result_frame_brute_force = tk.Frame(main_frame, bg=BG_COLOR)
 result_label_brute_force = tk.Label(result_frame_brute_force, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
@@ -920,7 +965,10 @@ label_md5=tk.Label(md5_frame, text="entrez le mot que vous voulez haché en md5"
 label_result_md5=tk.Label(md5_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
 
-
 toggle_back_button(False)
+
+'''root.bind_class("Entry", "<Control-c>", handle_shortcuts)
+root.bind_class("Entry", "<Control-v>", handle_shortcuts)
+root.bind_class("Entry", "<Control-a>", handle_shortcuts)'''
 
 root.mainloop()
