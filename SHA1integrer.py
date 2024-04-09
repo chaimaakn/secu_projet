@@ -216,6 +216,9 @@ def hide_all_frames():
     entry_rainbow.delete(0, tk.END)
     label_rainbow.place_forget() 
     choix_fct_frame.place_forget()
+    convertisseur_frame.place_forget()
+    md5_frame.place_forget()
+    sha1_frame.place_forget()
 
 # Fonction pour cacher la frame de saisie du mot de passe haché
 def hide_password_entry():
@@ -311,12 +314,7 @@ def return_to_previous_screen():
         advice_frame.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
-        toggle_back_button(False) 
-    elif current_frame== md5_frame:
-        md5_frame.place_forget()
-        button_frame.place(relx=0.5, rely=0.5, anchor='center')
-        current_frame = button_frame
-        toggle_back_button(False) 
+        toggle_back_button(False)  
     elif current_frame== attack_buttons_frame:
         attack_buttons_frame.place_forget()
         choix_fct_frame.place(relx=0.5, rely=0.5, anchor='center')
@@ -326,6 +324,21 @@ def return_to_previous_screen():
         choix_fct_frame.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
+        toggle_back_button(False) 
+    elif current_frame==convertisseur_frame:
+        convertisseur_frame.place_forget()
+        button_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = button_frame
+        toggle_back_button(False) 
+    elif current_frame==md5_frame:
+        md5_frame.place_forget()
+        convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = convertisseur_frame
+        toggle_back_button(False) 
+    elif current_frame==sha1_frame:
+        sha1_frame.place_forget()
+        convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = convertisseur_frame
         toggle_back_button(False) 
     elif current_frame == button_frame:
         pass
@@ -680,7 +693,7 @@ def show_advice():
     toggle_back_button(True)
     current_frame = advice_frame 
       
-def show_interface_md5():
+'''def show_interface_md5():
     global current_frame
 
     hide_all_frames()
@@ -689,7 +702,7 @@ def show_interface_md5():
     entry_md5.place(relx=0.5, rely=0.4, anchor='center')
     md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
     current_frame=md5_frame
-    toggle_back_button(True)
+    toggle_back_button(True)'''
 def md5_function():
     global current_frame
     hide_all_frames()
@@ -699,7 +712,17 @@ def md5_function():
     label_result_md5.place(relx=0.5,rely=0.6,anchor='center')
     current_frame=md5_frame
     toggle_back_button(True)
-       
+
+def sha1_function():
+    global current_frame
+    hide_all_frames()
+    password=entry_sha1.get().strip()
+    label_result_sha1.config(text="Hachage sha1:"+sha1(password))
+    pyperclip.copy(sha1(password))
+    label_result_md5.place(relx=0.5,rely=0.6,anchor='center')
+    current_frame=sha1_frame
+    toggle_back_button(True)
+
 # Fonction pour réinitialiser l'interface
 def reset_password_test_interface():
     global current_frame
@@ -795,12 +818,24 @@ attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLO
 #attack_button = Button(button_frame, text="Attaque", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(button_frame,attack_buttons_frame))
 advice_button = Button(button_frame, text="Conseil", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR,command=show_advice)
 test_password_button = Button(button_frame, text="Tester votre mot de passe", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_password_test_interface)
-md5_button = Button(button_frame, text="Convertisseur", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_interface_md5)
+convertisseur = Button(button_frame, text="Convertisseur", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(button_frame,convertisseur_frame))
 
 attack_button.pack(pady=10)
 advice_button.pack(pady=10)
 test_password_button.pack(pady=10)
+convertisseur.pack(pady=10)
+
+# l'interface du choix de la fonction de hachage pour convertisseur
+convertisseur_frame = tk.Frame(root, bg=BG_COLOR)
+
+title_label = tk.Label(convertisseur_frame, text="Choisissez une fonction de hachage ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
+title_label.pack()
+
+md5_button = Button(convertisseur_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(convertisseur_frame,md5_frame))
 md5_button.pack(pady=10)
+
+sha1_button = Button(convertisseur_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(convertisseur_frame,sha1_frame))
+sha1_button.pack(pady=10)
 
 # l'interface du choix de la fonction de hachage
 choix_fct_frame = tk.Frame(root, bg=BG_COLOR)
@@ -808,13 +843,10 @@ choix_fct_frame = tk.Frame(root, bg=BG_COLOR)
 title_label = tk.Label(choix_fct_frame, text="Choisissez une fonction de hachage ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BG_COLOR)
 title_label.pack()
 
-#md5_button = Button(choix_fct_frame, text="Attaque MD5", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda:num_attaque(1))
-#md5_button.bind("<Button-1>",show_dictionary_attack)
 md5_fct_button = Button(choix_fct_frame, text=" MD5 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
 md5_fct_button.bind("<Button-1>",bouton1_clique)
 md5_fct_button.pack(pady=10)
 
-#sha1_button = Button(choix_fct_frame, text="Attaque SHA1", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda:num_attaque(2))
 sha1_fct_button = Button(choix_fct_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activebackground=BUTTON_ACTIVE_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
 sha1_fct_button.bind("<Button-1>",bouton2_clique)
 sha1_fct_button.pack(pady=10)
@@ -850,7 +882,7 @@ lookup_table_button.pack(pady=10)
 
 
 # Label pour le mot de passe haché
-label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_hashed_password = tk.Label(main_frame, text="Entrez le mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 
 # Entrée pour le mot de passe haché
 entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
@@ -860,7 +892,7 @@ crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_
 #root.bind("<Return>", lambda event: crack_button.invoke())
 dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 #Declaration brut force 
-label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 
@@ -868,14 +900,14 @@ entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font
 #root.bind("<Return>", lambda event: start_brute_force_button.invoke())
 
 #Declaration lookup table 
-label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_lookup_table = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_lookup_table_button = Button(main_frame, text="Rechercher", command=run_lookup_table, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 lookup_table_title=tk.Label(main_frame, text="Lookup table", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 entry_lookup_table = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 #root.bind("<Return>", lambda event: start_lookup_table_button.invoke())
 
 #declaration rainbow
-label_rainbow = tk.Label(main_frame, text="Entrez votre mot de passe haché (MD5) :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_rainbow = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 entry_rainbow = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 crack_rainbow_button = Button(main_frame, text="Craquer le mot de passe", command=lambda:launch_rainbow_attack(entry_rainbow), fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 #root.bind("<Return>", lambda event: crack_rainbow_button.invoke())
@@ -963,12 +995,18 @@ advice_text = """
     - Changez régulièrement vos mots de passe
     """
 advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE), wraplength=450, justify="left")
-#déclaration button convertisseur:
+#déclaration des frames du convertisseur:
 md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
 entry_md5=tk.Entry(md5_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_md5=tk.Label(md5_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_result_md5=tk.Label(md5_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
+
+sha1_frame= tk.Frame(main_frame, bg=BG_COLOR)
+entry_sha1=tk.Entry(sha1_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_sha1=tk.Label(sha1_frame, text="entrez le mot que vous voulez haché en sha1", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_result_sha1=tk.Label(sha1_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+sha1_search_button=Button(sha1_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha1_function)
 
 toggle_back_button(False)
 
