@@ -709,7 +709,7 @@ def md5_function():
     global current_frame
     
     password=entry_md5.get().strip()
-    label_result_md5.config(text="Hachage md5:"+md5(password))
+    label_result_md5.config(text="Hachage md5:\n"+md5(password))
     label_result_md5.place(relx=0.5,rely=0.6,anchor='center')
     pyperclip.copy(md5(password))
     current_frame=md5_frame
@@ -729,7 +729,7 @@ def sha1_function():
     global current_frame
     
     password=entry_sha1.get().strip()
-    label_result_sha1.config(text="Hachage sha1:"+sha1(password))
+    label_result_sha1.config(text="Hachage sha1:\n"+sha1(password))
     label_result_sha1.place(relx=0.5,rely=0.6,anchor='center')
     pyperclip.copy(sha1(password))
     current_frame=sha1_frame
