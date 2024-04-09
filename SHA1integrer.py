@@ -781,23 +781,25 @@ def get_current_datetime():
     return date_time
 
 # Configuration de la fenêtre principale
-
+window_width=550
+window_height=500
 root = tk.Tk()
 root.title("Attaques sur les mots de passes")
 root.configure(bg=BG_COLOR)
 root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightthickness=0.5)
-root.geometry("550x500")  # Définir la taille de la fenêtre
-
+#root.geometry('550x500')  # Définir la taille de la fenêtre
+# Centre the window relative to the dimensions of the screen 
+root.geometry('{0:d}x{1}+{2}+{3}'.format(window_width, window_height, root.winfo_screenwidth() // 2 - window_width // 2, root.winfo_screenheight() // 2 - window_height // 2))
+'''
 # Obtenir les dimensions de la fenêtre
 window_width = root.winfo_reqwidth()
 window_height = root.winfo_reqheight()
-
 # Calculer les coordonnées pour centrer la fenêtre
 position_right = int(root.winfo_screenwidth()/2 - window_width/2)
 position_down = int(root.winfo_screenheight()/2 - window_height/2)
-
+'''
 # Définir la position de la fenêtre au milieu de l'écran
-root.geometry("+{}+{}".format(position_right, position_down))
+#root.geometry("+{}+{}".format(position_right, position_down))
 
 # Ajout d'une marge à côté des bordures
 root.grid_rowconfigure(0, weight=1)
