@@ -44,6 +44,7 @@ if bon_mot:
 else:
     print("Aucun mot n'a été trouvé.")
 '''
+'''''
 import itertools
 import string
 import time
@@ -93,3 +94,69 @@ def retrouver_mot():
 
 # Exemple d'utilisation
 retrouver_mot()
+'''
+import itertools
+import string
+import time
+import hashlib
+import sys
+import multiprocessing
+
+# Définir les caractères autorisés
+CARACTERES = string.ascii_letters + string.digits + string.punctuation
+
+# Fonction pour calculer le hachage MD5 d'un mot
+def md5(mot):
+    return hashlib.md5(mot.encode()).hexdigest()
+
+# Fonction pour tester si un mot correspond au hachage
+def est_bon_mot(mot, hash_a_trouver):
+    return md5(mot) == hash_a_trouver
+
+# Fonction pour trouver le bon mot en parallèle
+def trouver_bon_mot_parallele(hash_a_trouver, longueur, resultats):
+    for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
+        if est_bon_mot(mot, hash_a_trouver):
+            resultats.append(mot)
+            return
+
+# Fonction pour trouver le bon mot
+def trouver_bon_mot(hash_a_trouver):
+    longueur = 1
+    start_time = time.time()
+    mots_testes = 0
+
+    while True:
+        resultats = []
+        with multiprocessing.Pool() as pool:
+            for _ in range(multiprocessing.cpu_count()):
+                pool.apply_async(trouver_bon_mot_parallele, args=(hash_a_trouver, longueur, resultats))
+            pool.close()
+            pool.join()
+
+        if resultats:
+            end_time = time.time()
+            temps_ecoule = end_time - start_time
+            return resultats[0], temps_ecoule
+
+        longueur += 1
+        mots_testes += 10000
+        print(f"Mots testés : {mots_testes}")
+        sys.stdout.flush()
+
+# Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
+def retrouver_mot():
+    hash_input = input("Entrez le hash MD5 : ").strip()
+    if len(hash_input) != 32 or not all(c in string.hexdigits for c in hash_input):
+        print("Le hash entré n'est pas valide.")
+        return
+
+    bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
+    if bon_mot_trouve:
+        print(f"\nLe mot correspondant au hachage {hash_input} est: {bon_mot_trouve}")
+        print(f"Temps écoulé pour trouver le mot: {temps_ecoule:.6f} secondes")
+    else:
+        print("Aucun mot n'a été trouvé.")
+
+if __name__ == '__main__':
+    retrouver_mot()
