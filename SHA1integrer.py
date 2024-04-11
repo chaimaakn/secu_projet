@@ -329,7 +329,7 @@ def return_to_previous_screen():
         convertisseur_frame.place_forget()
         button_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = button_frame
-        toggle_back_button(True) 
+        toggle_back_button(False) 
     elif current_frame==md5_frame:
         md5_frame.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
