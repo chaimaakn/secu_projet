@@ -219,6 +219,10 @@ def hide_all_frames():
     convertisseur_frame.place_forget()
     md5_frame.place_forget()
     sha1_frame.place_forget()
+    salt_label.place_forget()
+    entry_salt.place_forget()
+    bouton_salt.place_forget()
+    c1.destroy()
 
 # Fonction pour cacher la frame de saisie du mot de passe haché
 def hide_password_entry():
@@ -235,20 +239,23 @@ def reset_progress_bar():
 
 # Fonction pour afficher l'interface de l'attaque par dictionnaire
 def show_dictionary_attack():
-    global current_frame
+    global current_frame,c1
     hide_all_frames()  # Cacher toutes les frames
 
     # Afficher l'interface de l'attaque par dictionnaire
     label_hashed_password.place(relx=0.5, rely=0.30, anchor='center')
     entry_hashed_password.place(relx=0.5, rely=0.4, anchor='center')
     dic_title.place(relx=0.5, rely=0.1, anchor="center")
-    crack_button.place(relx=0.5, rely=0.5, anchor='center')
+    crack_button.place(relx=0.5, rely=0.6, anchor='center')
+    c1 = tk.Checkbutton(main_frame, text='Salt',variable=var1, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    #c1.place(relx=0.5, rely=0.6, anchor='center')
+    c1.pack(expand=1,pady=10)
     current_frame = label_hashed_password
     toggle_back_button(True)
 
 # Fonction pour retourner à l'écran précédent
 def return_to_previous_screen():
-    global current_frame
+    global current_frame,c1
     if current_frame == result_frame:
         result_frame.place_forget()
         show_dictionary_attack()
@@ -298,6 +305,11 @@ def return_to_previous_screen():
         hide_password_entry()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         dic_title.place_forget()
+        salt_label.place_forget()
+        entry_salt.place_forget()
+        bouton_salt.place_forget()
+        c1.place_forget()
+        c1.destroy()
         current_frame = attack_buttons_frame
         toggle_back_button(True)  # Cacher le bouton "Retour"
     elif current_frame==result_frame_test_password:
@@ -343,11 +355,10 @@ def return_to_previous_screen():
     elif current_frame == button_frame:
         pass
 
-
    
 # Fonction pour cracker le mot de passe
 def crack_password():
-    global current_frame, current_progress, dernier_bouton_clique
+    global current_frame, current_progress, dernier_bouton_clique,c1
     hashed_password = entry_hashed_password.get().strip()
     
     if dernier_bouton_clique==1:
@@ -373,6 +384,7 @@ def crack_password():
     blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
     blink_dots(blink_label)  # Démarrer le clignotement des points
     current_frame = progress_bar
+    c1.destroy()
     toggle_back_button(True)
 
 
@@ -794,6 +806,23 @@ def get_current_datetime():
     date_time = now.strftime("%d/%m/%Y %H:%M:%S")
     return date_time
 
+def check_salt():
+    if var1.get()==0:
+        crack_button.place(relx=0.5, rely=0.6, anchor='center')
+        salt_label.place_forget()
+        entry_salt.place_forget()
+        bouton_salt.place_forget()
+    else:
+        crack_button.place_forget()
+        salt_label.place(relx=0.5, rely=0.6, anchor='center') 
+        entry_salt.place(relx=0.5, rely=0.7, anchor='center') 
+        bouton_salt.place(relx=0.5, rely=0.8, anchor='center') 
+        
+        
+def salt():
+    x=1
+    
+            
 # Configuration de la fenêtre principale
 window_width=550
 window_height=500
@@ -906,6 +935,13 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 
 # Bouton pour cracker le mot de passe
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+var1 = tk.IntVar()
+c1 = tk.Checkbutton(main_frame, text='Salt',variable=var1, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+c1.place(relx=0.5, rely=0.6, anchor='center')
+c1.place_forget()
+salt_label=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_salt=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+bouton_salt= Button(main_frame, text="Cracker le mot de passe", command=salt, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 #root.bind("<Return>", lambda event: crack_button.invoke())
 dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 #Declaration brut force 
