@@ -308,6 +308,7 @@ def return_to_previous_screen():
         salt_label.place_forget()
         entry_salt.place_forget()
         bouton_salt.place_forget()
+        var1.set(0) 
         c1.place_forget()
         c1.destroy()
         current_frame = attack_buttons_frame
@@ -820,7 +821,82 @@ def check_salt():
         
         
 def salt():
-    x=1
+    global current_frame, current_progress, dernier_bouton_clique,c1
+    hashed_password = entry_hashed_password.get().strip()
+    salt_hash=entry_salt.get().strip()
+    
+    if dernier_bouton_clique==1:
+        if message_box_md5(hashed_password)==True:
+            return
+    else:
+        if message_box_sha1(hashed_password)==True:
+            return
+    
+    hide_all_frames()
+    # Cacher tous les widgets sauf la barre de progression et le label clignotant
+    label_hashed_password.place_forget()
+    entry_hashed_password.place_forget()
+    crack_button.place_forget()
+    result_frame.place_forget()
+
+    with open("liste.txt", "r") as file:
+        words = [line.strip() for line in file]
+
+    progress_bar.config(maximum=100)
+    progress_bar.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
+    percentage_label.place(relx=0.5, rely=0.28, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
+    blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
+    blink_dots(blink_label)  # Démarrer le clignotement des points
+    current_frame = progress_bar
+    var1.set(0) 
+    c1.destroy()
+    toggle_back_button(True)
+
+
+    for progress in tqdm(range(101), desc="Chercher...", unit="%", leave=False):
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        percentage_label.config(text=f"{current_progress}%")
+        root.update()
+        time.sleep(0.05)
+
+    reset_progress_bar()  # Réinitialiser la barre de progression après la boucle
+
+    progress_bar.place_forget()  # Cacher la barre de progression
+    percentage_label.place_forget()  # Cacher le label de pourcentage
+    blink_label.place_forget()  # Cacher le label clignotant
+
+    if current_frame == progress_bar:
+        if dernier_bouton_clique == 1:
+            for word in words:
+                mot=word+salt_hash
+                md5_hash = hashlib.md5(mot.encode()).hexdigest()
+                if hashed_password == md5_hash:
+                    result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                    password_label.config(text=word, fg=ACCENT_COLOR)
+                    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                    current_frame = result_frame
+                    toggle_back_button(False)
+                    return
+        else:
+            for word in words:
+                mot=word+salt_hash
+                sha1_hash = hashlib.sha1(mot.encode()).hexdigest()
+                if hashed_password == sha1_hash:
+                    result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                    password_label.config(text=word, fg=ACCENT_COLOR)
+                    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                    current_frame = result_frame
+                    toggle_back_button(False)
+                    return
+
+
+        result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        password_label.config(text="")
+        result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+        current_frame = result_frame
+        toggle_back_button(False)
+    
     
             
 # Configuration de la fenêtre principale
@@ -937,8 +1013,9 @@ entry_hashed_password = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR,
 crack_button = Button(main_frame, text="Cracker le mot de passe", command=crack_password, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 var1 = tk.IntVar()
 c1 = tk.Checkbutton(main_frame, text='Salt',variable=var1, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-c1.place(relx=0.5, rely=0.6, anchor='center')
-c1.place_forget()
+#c1.pack()
+#c1.place(relx=0.5, rely=0.6, anchor='center')
+#c1.place_forget()
 salt_label=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 entry_salt=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 bouton_salt= Button(main_frame, text="Cracker le mot de passe", command=salt, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
