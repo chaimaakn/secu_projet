@@ -112,8 +112,8 @@ def trouver_bon_mot(hash_a_trouver):
                 end_time = time.time()  # Enregistrer le temps de fin
                 temps_ecoule = end_time - start_time
                 return mot, temps_ecoule
-            result_label_brute_force.config(text=f" {mot}",fg=FG_COLOR)
-            root.update()    
+            #result_label_brute_force.config(text=f" {mot}",fg=FG_COLOR)
+            #root.update()    
         longueur += 1
 
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
