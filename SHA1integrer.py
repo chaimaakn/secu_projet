@@ -104,6 +104,12 @@ def trouver_bon_mot(hash_a_trouver):
     while True:
         for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
             mots_testes += 1
+            vrai_mot=mot
+            if var2.get()==1:
+                mot=mot+entry_salt2.get().strip()
+            
+            
+
             if mots_testes % 10000 == 0:
                 print(f"Mots testés : {mots_testes}")
                 sys.stdout.flush()
@@ -111,7 +117,7 @@ def trouver_bon_mot(hash_a_trouver):
             if est_bon_mot(mot, hash_a_trouver):
                 end_time = time.time()  # Enregistrer le temps de fin
                 temps_ecoule = end_time - start_time
-                return mot, temps_ecoule
+                return vrai_mot, temps_ecoule
             #result_label_brute_force.config(text=f" {mot}",fg=FG_COLOR)
             #root.update()    
         longueur += 1
@@ -142,7 +148,7 @@ def retrouver_mot(hash_input):
 def show_brute_force_interface():
     global entry_brut_force 
     global current_frame
-    global start_brute_force_button
+    global start_brute_force_button,c2
     # Cacher toutes les autres frames
     hide_all_frames()
 
@@ -150,14 +156,16 @@ def show_brute_force_interface():
     
     label_brute_force.place(relx=0.5, rely=0.3, anchor='center')
     entry_brut_force.place(relx=0.5, rely=0.4, anchor='center')
-    start_brute_force_button.place(relx=0.5, rely=0.5, anchor='center') 
-    result_frame_brute_force.place(relx=0.5, rely=0.7, anchor='center')
+    start_brute_force_button.place(relx=0.5, rely=0.6, anchor='center') 
+    result_frame_brute_force.place(relx=0.5, rely=0.9, anchor='center')
     result_label_brute_force.pack(pady=10)
     password_label_brute_force.pack(side="top", padx=10, pady=5)
     retry_button_brute_force.pack(pady=15)
     retry_button_brute_force.pack_forget()
     brute_force_title.place(relx=0.5, rely=0.1, anchor="center")
-    
+    c2= tk.Checkbutton(main_frame, text='Salt',variable=var2, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt2,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    #c1.place(relx=0.5, rely=0.6, anchor='center')
+    c2.pack(expand=1,pady=10)
     current_frame = result_frame_brute_force
     toggle_back_button(True)
     
@@ -223,6 +231,10 @@ def hide_all_frames():
     entry_salt.place_forget()
     bouton_salt.place_forget()
     c1.destroy()
+    salt_label2.place_forget()
+    entry_salt2.place_forget()
+    bouton_salt2.place_forget()
+    c2.destroy()
 
 # Fonction pour cacher la frame de saisie du mot de passe haché
 def hide_password_entry():
@@ -255,7 +267,7 @@ def show_dictionary_attack():
 
 # Fonction pour retourner à l'écran précédent
 def return_to_previous_screen():
-    global current_frame,c1
+    global current_frame,c1,c2
     if current_frame == result_frame:
         result_frame.place_forget()
         show_dictionary_attack()
@@ -277,6 +289,12 @@ def return_to_previous_screen():
         start_brute_force_button.place_forget()
         attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
         brute_force_title.place_forget()
+        salt_label2.place_forget()
+        entry_salt2.place_forget()
+        bouton_salt2.place_forget()
+        var2.set(0) 
+        c2.place_forget()
+        c2.destroy()
         current_frame = attack_buttons_frame
         toggle_back_button(True)
     elif current_frame == result_frame_lookup_table:
@@ -776,6 +794,7 @@ def retrybr():
     result_label_brute_force.config(text="")
     password_label_brute_force.config(text="")
     entry_brut_force.delete(0, tk.END)
+    var2.set(0)
     # Réinitialiser l'interface de l'attaque par dictionnaire
     show_brute_force_interface()
 
@@ -818,7 +837,18 @@ def check_salt():
         salt_label.place(relx=0.5, rely=0.6, anchor='center') 
         entry_salt.place(relx=0.5, rely=0.7, anchor='center') 
         bouton_salt.place(relx=0.5, rely=0.8, anchor='center') 
-        
+def check_salt2():
+    if var2.get()==0:
+        start_brute_force_button.place(relx=0.5, rely=0.6, anchor='center')
+        salt_label2.place_forget()
+        entry_salt2.place_forget()
+        bouton_salt2.place_forget()
+    else:
+        start_brute_force_button.place_forget()
+        salt_label2.place(relx=0.5, rely=0.6, anchor='center') 
+        entry_salt2.place(relx=0.5, rely=0.7, anchor='center') 
+        bouton_salt2.place(relx=0.5, rely=0.8, anchor='center') 
+            
         
 def salt():
     global current_frame, current_progress, dernier_bouton_clique,c1
@@ -896,6 +926,11 @@ def salt():
         result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
         current_frame = result_frame
         toggle_back_button(False)
+        
+        
+def salt2():
+    run_brute_force()
+
     
     
             
@@ -1026,6 +1061,15 @@ label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché 
 start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 
+# Bouton pour cracker le mot de passe
+var2 = tk.IntVar()
+c2 = tk.Checkbutton(main_frame, text='Salt',variable=var2, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt2,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+#c1.pack()
+#c1.place(relx=0.5, rely=0.6, anchor='center')
+#c1.place_forget()
+salt_label2=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_salt2=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+bouton_salt2= Button(main_frame, text="Rechercher", command=salt2, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 entry_brut_force = tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 #root.bind("<Return>", lambda event: start_brute_force_button.invoke())
 
