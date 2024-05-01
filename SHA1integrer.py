@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, font
+import cv2
 from tqdm import tqdm
 from tkmacosx import Button
 import hashlib
@@ -10,6 +11,8 @@ import itertools
 import sys 
 import pickle
 import pyperclip
+from PIL import Image, ImageTk
+
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
@@ -937,6 +940,24 @@ def salt2():
 # Configuration de la fenêtre principale
 window_width=550
 window_height=500
+
+def update_frame():
+    ret, frame = cap.read()
+    if ret:
+        root.withdraw()
+        cv2_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img_tk = ImageTk.PhotoImage(Image.fromarray(cv2_img))
+        canvas.create_image(0, 0, anchor=tk.NW, image=img_tk)
+        canvas.img = img_tk
+        #intro_window.after(30, update_frame)
+    else:
+        root.deiconify()
+        root2.withdraw()
+        cap.release()
+        canvas.destroy()
+    root2.after(30, update_frame)
+    
+    
 root = tk.Tk()
 root.title("Attaques sur les mots de passes")
 root.configure(bg=BG_COLOR)
@@ -944,6 +965,20 @@ root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightth
 #root.geometry('550x500')  # Définir la taille de la fenêtre
 # Centre the window relative to the dimensions of the screen 
 root.geometry('{0:d}x{1}+{2}+{3}'.format(window_width, window_height, root.winfo_screenwidth() // 2 - window_width // 2, root.winfo_screenheight() // 2 - window_height // 2))
+cap = cv2.VideoCapture("logo1.mp4")
+
+# Créer une fenêtre Tkinter pour afficher la vidéo
+root2 = tk.Toplevel(root)
+root2.title("Chargement...")
+root2.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightthickness=0.5)
+#root.geometry('550x500')  # Définir la taille de la fenêtre
+# Centre the window relative to the dimensions of the screen 
+root2.geometry('{0:d}x{1}+{2}+{3}'.format(window_width, window_height, root2.winfo_screenwidth() // 2 - window_width // 2, root2.winfo_screenheight() // 2 - window_height // 2))
+root2.grid_rowconfigure(0, weight=1)
+root2.grid_columnconfigure(0, weight=1)
+# Créer un canvas pour afficher la vidéo
+canvas = tk.Canvas(root2, width=window_width, height=window_height, highlightthickness=0)
+canvas.pack()
 '''
 # Obtenir les dimensions de la fenêtre
 window_width = root.winfo_reqwidth()
@@ -960,6 +995,7 @@ root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(0, weight=1)
 main_frame = tk.Frame(root, bg=BG_COLOR)
 main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
 # Nouvelle frame avant la frame principale
 '''''
 intro_frame = tk.Frame(root, bg=BG_COLOR)
@@ -1190,7 +1226,7 @@ toggle_back_button(False)
 '''root.bind_class("Entry", "<Control-c>", handle_shortcuts)
 root.bind_class("Entry", "<Control-v>", handle_shortcuts)
 root.bind_class("Entry", "<Control-a>", handle_shortcuts)'''
-
+update_frame()
 root.mainloop()
 
 
