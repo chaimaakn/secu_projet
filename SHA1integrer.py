@@ -12,7 +12,9 @@ import sys
 import pickle
 import pyperclip
 from PIL import Image, ImageTk
-####
+from passlib.hash import md5_crypt
+from passlib.hash import sha1_crypt
+
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
@@ -86,6 +88,28 @@ def message_box_md5(hashed_password):
         return True
     return False
 
+def message_box_md5_crypt(hashed_password):
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    try:
+        md5_crypt.from_string(hashed_password)
+    except ValueError:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    return False
+
+def message_box_sha1_crypt(hashed_password):
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    try:
+        sha1_crypt.from_string(hashed_password)
+    except ValueError:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        return True
+    return False
+
 # Fonction pour calculer le hachage MD5 d'un mot
 def md5(mot):
     return hashlib.md5(mot.encode()).hexdigest()
@@ -111,8 +135,6 @@ def trouver_bon_mot(hash_a_trouver):
             if var2.get()==1:
                 mot=mot+entry_salt2.get().strip()
             
-            
-
             if mots_testes % 10000 == 0:
                 print(f"Mots testés : {mots_testes}")
                 sys.stdout.flush()
@@ -859,10 +881,10 @@ def salt():
     salt_hash=entry_salt.get().strip()
     
     if dernier_bouton_clique==1:
-        if message_box_md5(hashed_password)==True:
+        if message_box_md5_crypt(hashed_password)==True:
             return
     else:
-        if message_box_sha1(hashed_password)==True:
+        if message_box_sha1_crypt(hashed_password)==True:
             return
     
     hide_all_frames()
@@ -941,7 +963,7 @@ def salt2():
 window_width=550
 window_height=500
 
-def update_frame():
+'''def update_frame():
     ret, frame = cap.read()
     if ret:
         root.withdraw()
@@ -955,7 +977,7 @@ def update_frame():
         root2.withdraw()
         cap.release()
         canvas.destroy()
-    root2.after(30, update_frame)
+    root2.after(30, update_frame)'''
     
     
 root = tk.Tk()
@@ -965,7 +987,7 @@ root.config(highlightbackground="#00ff00", highlightcolor="#00ff00", highlightth
 #root.geometry('550x500')  # Définir la taille de la fenêtre
 # Centre the window relative to the dimensions of the screen 
 root.geometry('{0:d}x{1}+{2}+{3}'.format(window_width, window_height, root.winfo_screenwidth() // 2 - window_width // 2, root.winfo_screenheight() // 2 - window_height // 2))
-cap = cv2.VideoCapture("logo1.mp4")
+'''cap = cv2.VideoCapture("logo1.mp4")
 
 # Créer une fenêtre Tkinter pour afficher la vidéo
 root2 = tk.Toplevel(root)
@@ -978,7 +1000,7 @@ root2.grid_rowconfigure(0, weight=1)
 root2.grid_columnconfigure(0, weight=1)
 # Créer un canvas pour afficher la vidéo
 canvas = tk.Canvas(root2, width=window_width, height=window_height, highlightthickness=0)
-canvas.pack()
+canvas.pack()'''
 '''
 # Obtenir les dimensions de la fenêtre
 window_width = root.winfo_reqwidth()
@@ -1226,11 +1248,6 @@ toggle_back_button(False)
 '''root.bind_class("Entry", "<Control-c>", handle_shortcuts)
 root.bind_class("Entry", "<Control-v>", handle_shortcuts)
 root.bind_class("Entry", "<Control-a>", handle_shortcuts)'''
-update_frame()
+#update_frame()
 root.mainloop()
 
-
-'''
-wech mazal f sha1 bach manansach :
- -> convertisseur : je veux utiliser la choix_fct_frame mais jsp si ca marche
-'''
