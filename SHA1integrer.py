@@ -14,6 +14,7 @@ import pyperclip
 from PIL import Image, ImageTk
 from passlib.hash import md5_crypt
 from passlib.hash import sha1_crypt
+import re
 
 # Couleurs
 BG_COLOR = "#000000"
@@ -90,25 +91,34 @@ def message_box_md5(hashed_password):
 
 def message_box_md5_crypt(hashed_password):
     if not hashed_password:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de MD5_CRYPT.", parent=root)
         return True
-    try:
-        md5_crypt.from_string(hashed_password)
-    except ValueError:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+    if len(hashed_password) != 22 or not all(c in string.ascii_letters + string.digits + './' for c in hashed_password):
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de MD5_CRYPT.", parent=root)
         return True
     return False
 
+#a verifier 
 def message_box_sha1_crypt(hashed_password):
     if not hashed_password:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de SHA1_CRYPT.", parent=root)
         return True
-    try:
-        sha1_crypt.from_string(hashed_password)
-    except ValueError:
-        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.", parent=root)
+    if len(hashed_password) != 28 or not all(c in string.ascii_letters + string.digits + './' for c in hashed_password):
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de SHA1_CRYPT.", parent=root)
         return True
     return False
+
+def valid_salt(salt):
+    # Expression régulière pour vérifier le format du sel
+    pattern = r'^[0-9a-zA-Z./]{1,8}$'
+    return bool(re.match(pattern, salt))
+
+def messagebox_salt(salt):
+    if not valid_salt(salt):
+        messagebox.showerror("Erreur", "Le sel doit contenir jusqu'à 8 caractères alphanumériques, '.' ou '/'.", parent=root)
+        return True
+    return False
+
 
 # Fonction pour calculer le hachage MD5 d'un mot
 def md5(mot):
@@ -880,13 +890,21 @@ def salt():
     hashed_password = entry_hashed_password.get().strip()
     salt_hash=entry_salt.get().strip()
     
+    if messagebox_salt(salt_hash)== True :
+       return
+    
     if dernier_bouton_clique==1:
         if message_box_md5_crypt(hashed_password)==True:
             return
+        chaine_inter = "$1$" + salt_hash + "$"
+        hashed_password=chaine_inter+hashed_password
     else:
         if message_box_sha1_crypt(hashed_password)==True:
             return
+        chaine_inter="$sha1$480000$"+salt_hash+"$"
+        hashed_password=chaine_inter+hashed_password
     
+
     hide_all_frames()
     # Cacher tous les widgets sauf la barre de progression et le label clignotant
     label_hashed_password.place_forget()
@@ -920,12 +938,11 @@ def salt():
     progress_bar.place_forget()  # Cacher la barre de progression
     percentage_label.place_forget()  # Cacher le label de pourcentage
     blink_label.place_forget()  # Cacher le label clignotant
-
+     
     if current_frame == progress_bar:
         if dernier_bouton_clique == 1:
             for word in words:
-                mot=word+salt_hash
-                md5_hash = hashlib.md5(mot.encode()).hexdigest()
+                md5_hash = md5_crypt.using(salt=salt_hash).hash(word)
                 if hashed_password == md5_hash:
                     result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
                     password_label.config(text=word, fg=ACCENT_COLOR)
@@ -935,8 +952,7 @@ def salt():
                     return
         else:
             for word in words:
-                mot=word+salt_hash
-                sha1_hash = hashlib.sha1(mot.encode()).hexdigest()
+                sha1_hash = sha1_crypt.using(rounds=480000,salt=salt_hash).hash(word)
                 if hashed_password == sha1_hash:
                     result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
                     password_label.config(text=word, fg=ACCENT_COLOR)
@@ -944,7 +960,6 @@ def salt():
                     current_frame = result_frame
                     toggle_back_button(False)
                     return
-
 
         result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
         password_label.config(text="")
@@ -957,7 +972,7 @@ def salt2():
     run_brute_force()
 
     
-    
+   
             
 # Configuration de la fenêtre principale
 window_width=550
