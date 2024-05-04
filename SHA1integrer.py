@@ -187,7 +187,6 @@ def retrouver_mot():
              if message_box_sha1(hash_input)==True:
                 return
     
-    print("hash_input = ",hash_input)
     bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
     if bon_mot_trouve:
         
