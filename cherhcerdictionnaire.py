@@ -1,16 +1,63 @@
-def chercher_mot_dans_fichier(mot, nom_fichier):
-    try:
-        with open(nom_fichier, 'r') as fichier:
-            lignes = fichier.readlines()
-            for index, ligne in enumerate(lignes, 1):
-                if mot.lower() in ligne.lower():
-                    print(f"Le mot '{mot}' a été trouvé dans la ligne {index}: {ligne.strip()}")
-                    return  # Quitte la fonction après avoir trouvé la première occurrence
-            print(f"Le mot '{mot}' n'a pas été trouvé dans le fichier.")
-    except FileNotFoundError:
-        print(f"Le fichier '{nom_fichier}' n'a pas été trouvé.")
+import hashlib
+import itertools
+import string
+import threading
 
-# Exemple d'utilisation :
-mot_a_chercher = input("Entrez le mot que vous voulez chercher dans le fichier : ")
-nom_fichier = "liste.txt"  # Nom du fichier où se trouvent les mots
-chercher_mot_dans_fichier(mot_a_chercher, nom_fichier)
+password_found = False
+password_lock = threading.Lock()
+
+def crack_password(password_hash):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    
+    for length in range(1, 13):  # Longueur maximale du mot de passe : 12 caractères
+        for combination in itertools.product(characters, repeat=length):
+            password = ''.join(combination)
+            password_bytes = password.encode('utf-8')
+            password_md5 = hashlib.md5(password_bytes).hexdigest()
+            
+            if password_md5 == password_hash:
+                return password
+    
+    return None
+
+def thread_function(password_hash, lengths):
+    global password_found
+    
+    characters = string.ascii_letters + string.digits + string.punctuation
+    
+    for length in lengths:
+        for combination in itertools.product(characters, repeat=length):
+            with password_lock:
+                if password_found:
+                    return
+            
+            password = ''.join(combination)
+            password_bytes = password.encode('utf-8')
+            password_md5 = hashlib.md5(password_bytes).hexdigest()
+            
+            if password_md5 == password_hash:
+                with password_lock:
+                    password_found = True
+                    print(f"Mot de passe trouvé : {password}")
+                return
+
+def main():
+    password_hash = input("Entrez le hash MD5 du mot de passe à cracker : ")
+    
+    num_threads = 8  # Nombre de threads à utiliser
+    thread_ranges = [(1, 2, 3, 4), (5, 6), (7,), (8,), (9,), (10,), (11,), (12,)]  # Plages de longueur pour chaque thread
+    
+    threads = []
+    for lengths in thread_ranges:
+        thread = threading.Thread(target=thread_function, args=(password_hash, lengths))
+        threads.append(thread)
+        thread.start()
+    
+    for thread in threads:
+        thread.join()
+    
+    if not password_found:
+        print("Mot de passe non trouvé.")
+
+if __name__ == '__main__':
+    main()
