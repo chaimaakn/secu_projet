@@ -21,6 +21,6 @@ else:
 
 
 
-password = "batman"
-hashed_password = sha1_crypt.hash(password)
+password = "bat"
+hashed_password = md5_crypt.encrypt(password, rounds=1)
 print("Mot de passe haché avec sha1_crypt :", hashed_password)

@@ -127,10 +127,18 @@ def md5(mot):
 # Fonction pour tester si un mot correspond au hachage
 def est_bon_mot(mot, hash_a_trouver):
     global dernier_bouton_clique
-    if dernier_bouton_clique==1:
-        return md5(mot) == hash_a_trouver
+    salt_hash=entry_salt2.get().strip()
+    if var2.get()==1:
+        if dernier_bouton_clique==1:
+            return md5_crypt.using(salt=salt_hash,rounds=1).hash(mot) == hash_a_trouver
+        else:
+            return sha1_crypt.using(salt=salt_hash,rounds=1).hash(mot) == hash_a_trouver
     else:
-        return sha1(mot) == hash_a_trouver
+        if dernier_bouton_clique==1:
+            return md5(mot) == hash_a_trouver
+        else:
+            return sha1(mot) == hash_a_trouver
+    
     
 
 # Fonction pour trouver le bon mot
@@ -142,9 +150,7 @@ def trouver_bon_mot(hash_a_trouver):
         for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
             mots_testes += 1
             vrai_mot=mot
-            if var2.get()==1:
-                mot=mot+entry_salt2.get().strip()
-            
+    
             if mots_testes % 10000 == 0:
                 print(f"Mots testés : {mots_testes}")
                 sys.stdout.flush()
@@ -158,15 +164,28 @@ def trouver_bon_mot(hash_a_trouver):
         longueur += 1
 
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
-def retrouver_mot(hash_input):
+def retrouver_mot():
     global dernier_bouton_clique
-    
-    if dernier_bouton_clique==1:
-        if message_box_md5(hash_input)==True:
+    hash_input=entry_brut_force.get().strip()
+    if var2.get()==1:
+        salt_hash=entry_salt2.get().strip()
+        if messagebox_salt(salt_hash)== True:
             return
+        if dernier_bouton_clique==1:
+            if message_box_md5_crypt(hash_input)==True:
+               return
+            hash_input="$1$"+salt_hash+"$"+hash_input
+        else:
+            if message_box_sha1_crypt(hash_input)==True:
+               return
+            hash_input="$sha1$1$"+salt_hash+"$"+hash_input
     else:
-        if message_box_sha1(hash_input)==True:
-            return
+        if dernier_bouton_clique==1:
+            if message_box_md5(hash_input)==True:
+                return
+        else:
+             if message_box_sha1(hash_input)==True:
+                return
     
     bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
     if bon_mot_trouve:
@@ -204,7 +223,7 @@ def show_brute_force_interface():
     current_frame = result_frame_brute_force
     toggle_back_button(True)
     
-def run_brute_force():
+'''def run_brute_force():
     
     try:
        global start_brute_force_button
@@ -219,7 +238,8 @@ def run_brute_force():
        
        
     except Exception as e:
-        messagebox.showerror("Erreur", f"Une erreur s'est produite : {e}")     
+        messagebox.showerror("Erreur", f"Une erreur s'est produite : {e}")     '''
+
 # Variable pour stocker la valeur actuelle de la barre de progression
 current_progress = 0
 
@@ -901,8 +921,7 @@ def salt():
     else:
         if message_box_sha1_crypt(hashed_password)==True:
             return
-        chaine_inter="$sha1$480000$"+salt_hash+"$"
-        hashed_password=chaine_inter+hashed_password
+        hashed_password="$sha1$1$"+salt_hash+"$"+hashed_password
     
 
     hide_all_frames()
@@ -952,7 +971,7 @@ def salt():
                     return
         else:
             for word in words:
-                sha1_hash = sha1_crypt.using(rounds=480000,salt=salt_hash).hash(word)
+                sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(word)
                 if hashed_password == sha1_hash:
                     result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
                     password_label.config(text=word, fg=ACCENT_COLOR)
@@ -969,7 +988,7 @@ def salt():
         
         
 def salt2():
-    run_brute_force()
+    retrouver_mot()
 
     
    
@@ -1131,7 +1150,7 @@ bouton_salt= Button(main_frame, text="Cracker le mot de passe", command=salt, fg
 dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 #Declaration brut force 
 label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-start_brute_force_button = Button(main_frame, text="Rechercher", command=run_brute_force, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
+start_brute_force_button = Button(main_frame, text="Rechercher", command=retrouver_mot, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 
 # Bouton pour cracker le mot de passe
