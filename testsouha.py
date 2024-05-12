@@ -140,7 +140,8 @@ def est_bon_mot(mot, hash_a_trouver):
             return sha1(mot) == hash_a_trouver
     
 password_found = False
-password_lock = threading.Lock()   
+password_lock = threading.Lock() 
+le_bon_MotDePasse = None  
 def crack_password(password_hash):
     
     
@@ -157,6 +158,7 @@ def crack_password(password_hash):
 # Fonction pour trouver le bon mot
 def trouver_bon_mot(hash_a_trouver, lengths):
         global password_found
+        global le_bon_MotDePasse
         for length in lengths:
          for combination in itertools.product(CARACTERES, repeat=length):
             with password_lock:
@@ -170,8 +172,7 @@ def trouver_bon_mot(hash_a_trouver, lengths):
             if password_md5 == hash_a_trouver:
                 with password_lock:
                     password_found = True
-                    retry_button_brute_force.pack(side=tk.LEFT, padx=10)
-                    result_label_brute_force.config(text=f"Le mot est: {password} ", fg=FG_COLOR)
+                    le_bon_MotDePasse = password
                     
                 return 
             
@@ -213,7 +214,15 @@ def retrouver_mot():
            thread.join()   
     
  
+    if password_found:
+        
+        retry_button_brute_force.pack(side=tk.LEFT, padx=10)
+        result_label_brute_force.config(text=f"Le mot est: {le_bon_MotDePasse} ", fg=FG_COLOR)
+        toggle_back_button(False)
 
+        
+    else:
+        messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
     
 
 def show_brute_force_interface():
