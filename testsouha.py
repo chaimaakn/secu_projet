@@ -142,7 +142,7 @@ def est_bon_mot(mot, hash_a_trouver):
 password_found = False
 password_lock = threading.Lock() 
 le_bon_MotDePasse = None  
-def crack_password(password_hash):
+'''def crack_password(password_hash):
     
     
     for length in range(1, 13):  # Longueur maximale du mot de passe : 12 caractères
@@ -154,7 +154,7 @@ def crack_password(password_hash):
             if password_md5 == password_hash:
                 return password
     
-    return None
+    return None'''
 # Fonction pour trouver le bon mot
 def trouver_bon_mot(hash_a_trouver, lengths):
         global password_found
@@ -167,14 +167,25 @@ def trouver_bon_mot(hash_a_trouver, lengths):
             
             password = ''.join(combination)
             password_bytes = password.encode('utf-8')
-            password_md5 = hashlib.md5(password_bytes).hexdigest()
-            
-            if password_md5 == hash_a_trouver:
-                with password_lock:
+            if dernier_bouton_clique==1:
+                 password_md5 = hashlib.md5(password_bytes).hexdigest()
+                 if password_md5 == hash_a_trouver:
+                   with password_lock:
                     password_found = True
                     le_bon_MotDePasse = password
                     
-                return 
+                   return 
+                 
+            else:
+                password_sha1 = hashlib.sha1(password_bytes).hexdigest()
+                if password_sha1 == hash_a_trouver:
+                 with password_lock:
+                    password_found = True
+                    le_bon_MotDePasse = password
+                    
+                    return 
+
+            
             
 
     
