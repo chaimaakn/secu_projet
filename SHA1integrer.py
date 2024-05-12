@@ -687,25 +687,36 @@ def launch_rainbow_attack(entry_hashed_password):
     current_frame = progress_bar
     toggle_back_button(False)
     
-    # Boucle de progression
-    for progress in tqdm(range(101), desc="Recherche...", unit="%", leave=False):
+    # Boucle de progression jusqu'à 50%
+    for progress in tqdm(range(51), desc="Recherche...", unit="%", leave=False):
         current_progress = progress
         progress_bar.config(value=current_progress)
         percentage_label.config(text=f"{current_progress}%")
         root.update()
         time.sleep(0.05)
-    
+
+    # Exécution de run_rainbow
+    result = run_rainbow(entry_hashed_password)
+
+    # Boucle de progression de 50% à 100%
+    for progress in tqdm(range(51, 101), desc="Recherche...", unit="%", leave=False):
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        percentage_label.config(text=f"{current_progress}%")
+        root.update()
+        time.sleep(0.05)
+
     # Réinitialisation de la barre de progression
     reset_progress_bar()
-    
+
     # Cacher les éléments associés à la barre de progression
     progress_bar.place_forget()
     percentage_label.place_forget()
     blink_label.place_forget()
     toggle_back_button(False)
-    
+
     # Affichage des résultats
-    result = run_rainbow(entry_hashed_password)
+    # result = run_rainbow(entry_hashed_password)  # Cette ligne a été déplacée plus haut
     if result:
         result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
         password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
