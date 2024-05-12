@@ -5,6 +5,7 @@ import threading
 
 password_found = False
 password_lock = threading.Lock()
+le_bon_MotDePasse = None
 
 def crack_password(password_hash):
     characters = string.ascii_letters + string.digits + string.punctuation
@@ -22,6 +23,7 @@ def crack_password(password_hash):
 
 def thread_function(password_hash, lengths):
     global password_found
+    global le_bon_MotDePasse
     
     characters = string.ascii_letters + string.digits + string.punctuation
     
@@ -38,10 +40,12 @@ def thread_function(password_hash, lengths):
             if password_md5 == password_hash:
                 with password_lock:
                     password_found = True
-                    print(f"Mot de passe trouvé : {password}")
+                    le_bon_MotDePasse = password
                 return
 
 def main():
+    global le_bon_MotDePasse
+    
     password_hash = input("Entrez le hash MD5 du mot de passe à cracker : ")
     
     num_threads = 8  # Nombre de threads à utiliser
@@ -56,7 +60,10 @@ def main():
     for thread in threads:
         thread.join()
     
-    if not password_found:
+    if password_found:
+        print("Mot de passe trouvé !")
+        print("Le bon mot de passe est :", le_bon_MotDePasse)
+    else:
         print("Mot de passe non trouvé.")
 
 if __name__ == '__main__':
