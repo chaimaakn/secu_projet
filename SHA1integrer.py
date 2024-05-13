@@ -15,7 +15,7 @@ from PIL import Image, ImageTk
 from passlib.hash import md5_crypt
 from passlib.hash import sha1_crypt
 import re
-
+import threading
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
@@ -142,27 +142,39 @@ def est_bon_mot(mot, hash_a_trouver):
     
 
 # Fonction pour trouver le bon mot
-def trouver_bon_mot(hash_a_trouver):
-    longueur = 1
-    start_time = time.time()  # Enregistrer le temps de départ
-    mots_testes = 0
-    while True:
-        for mot in (''.join(carac) for carac in itertools.product(CARACTERES, repeat=longueur)):
-            mots_testes += 1
-            vrai_mot=mot
-    
-            if mots_testes % 10000 == 0:
-                print(f"Mots testés : {mots_testes}")
-                sys.stdout.flush()
-             
-            if est_bon_mot(mot, hash_a_trouver):
-                end_time = time.time()  # Enregistrer le temps de fin
-                temps_ecoule = end_time - start_time
-                return vrai_mot, temps_ecoule
-            #result_label_brute_force.config(text=f" {mot}",fg=FG_COLOR)
-            #root.update()    
-        longueur += 1
+def trouver_bon_mot(hash_a_trouver, lengths):
+        global password_found
+        global le_bon_MotDePasse
+        for length in lengths:
+         for combination in itertools.product(CARACTERES, repeat=length):
+            with password_lock:
+                if password_found:
+                    return
+            
+            password = ''.join(combination)
+            password_bytes = password.encode('utf-8')
+            if dernier_bouton_clique==1:
+                 password_md5 = hashlib.md5(password_bytes).hexdigest()
+                 if password_md5 == hash_a_trouver:
+                   with password_lock:
+                    password_found = True
+                    le_bon_MotDePasse = password
+                    
+                   return 
+                 
+            else:
+                password_sha1 = hashlib.sha1(password_bytes).hexdigest()
+                if password_sha1 == hash_a_trouver:
+                 with password_lock:
+                    password_found = True
+                    le_bon_MotDePasse = password
+                    
+                    return 
 
+            
+            
+
+    
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
 def retrouver_mot():
     global dernier_bouton_clique
@@ -186,17 +198,32 @@ def retrouver_mot():
         else:
              if message_box_sha1(hash_input)==True:
                 return
+    num_threads = 8  # Nombre de threads à utiliser
+    thread_ranges = [(1, 2, 3, 4), (5, 6), (7,), (8,), (9,), (10,), (11,), (12,)]  # Plages de longueur pour chaque thread
     
-    bon_mot_trouve, temps_ecoule = trouver_bon_mot(hash_input)
-    if bon_mot_trouve:
+    threads = []
+    for lengths in thread_ranges:
+           thread = threading.Thread(target=trouver_bon_mot, args=(hash_input, lengths))
+           threads.append(thread)
+           thread.start()
+    
+    for thread in threads:
+           thread.join()   
+    
+ 
+    if password_found:
         
         retry_button_brute_force.pack(side=tk.LEFT, padx=10)
-        result_label_brute_force.config(text=f"Le mot est: {bon_mot_trouve} \n trouvé en {temps_ecoule:.6f} secondes", fg=FG_COLOR)
+        result_label_brute_force.config(text=f"Le mot est: {le_bon_MotDePasse} ", fg=FG_COLOR)
         toggle_back_button(False)
 
         
     else:
         messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
+    
+
+
+   
 
 
 def show_brute_force_interface():
@@ -1163,7 +1190,9 @@ dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR,
 label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_brute_force_button = Button(main_frame, text="Rechercher", command=retrouver_mot, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
-
+password_found = False
+password_lock = threading.Lock() 
+le_bon_MotDePasse = None  
 # Bouton pour cracker le mot de passe
 var2 = tk.IntVar()
 c2 = tk.Checkbutton(main_frame, text='Salt',variable=var2, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt2,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
