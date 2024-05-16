@@ -1,70 +1,65 @@
 import hashlib
 import itertools
 import string
+import concurrent.futures
 import threading
+import os
 
+# Global variables
 password_found = False
 password_lock = threading.Lock()
 le_bon_MotDePasse = None
 
-def crack_password(password_hash):
-    characters = string.ascii_letters + string.digits + string.punctuation
-    
-    for length in range(1, 13):  # Longueur maximale du mot de passe : 12 caractères
-        for combination in itertools.product(characters, repeat=length):
-            password = ''.join(combination)
-            password_bytes = password.encode('utf-8')
-            password_md5 = hashlib.md5(password_bytes).hexdigest()
-            
-            if password_md5 == password_hash:
-                return password
-    
-    return None
+# Function executed by each thread
+def generate_passwords(characters, length):
+    for combination in itertools.product(characters, repeat=length):
+        yield ''.join(combination)
 
-def thread_function(password_hash, lengths):
+def thread_function(password_hash, characters, length):
     global password_found
     global le_bon_MotDePasse
-    
-    characters = string.ascii_letters + string.digits + string.punctuation
-    
-    for length in lengths:
-        for combination in itertools.product(characters, repeat=length):
+
+    for password in generate_passwords(characters, length):
+        if password_found:
+            return
+
+        password_bytes = password.encode('utf-8')
+        password_md5 = hashlib.md5(password_bytes).hexdigest()
+
+        if password_md5 == password_hash:
             with password_lock:
-                if password_found:
-                    return
-            
-            password = ''.join(combination)
-            password_bytes = password.encode('utf-8')
-            password_md5 = hashlib.md5(password_bytes).hexdigest()
-            
-            if password_md5 == password_hash:
-                with password_lock:
+                if not password_found:
                     password_found = True
                     le_bon_MotDePasse = password
-                return
+            return
 
-def main():
+# Main brute force function
+def brute_force_password(password_hash, max_length=12, num_threads=None):
     global le_bon_MotDePasse
-    
-    password_hash = input("Entrez le hash MD5 du mot de passe à cracker : ")
-    
-    num_threads = 8  # Nombre de threads à utiliser
-    thread_ranges = [(1, 2, 3, 4), (5, 6), (7,), (8,), (9,), (10,), (11,), (12,)]  # Plages de longueur pour chaque thread
-    
-    threads = []
-    for lengths in thread_ranges:
-        thread = threading.Thread(target=thread_function, args=(password_hash, lengths))
-        threads.append(thread)
-        thread.start()
-    
-    for thread in threads:
-        thread.join()
-    
-    if password_found:
+
+    # Limiting to alphanumeric characters for better performance
+    characters = string.ascii_letters + string.digits
+    if num_threads is None:
+        num_threads = min(24, os.cpu_count() * 2)  # Use up to 24 threads or twice the number of CPU cores
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = []
+        for length in range(1, max_length + 1):
+            futures.append(executor.submit(thread_function, password_hash, characters, length))
+
+        for future in concurrent.futures.as_completed(futures):
+            if password_found:
+                break
+
+    if le_bon_MotDePasse:
         print("Mot de passe trouvé !")
         print("Le bon mot de passe est :", le_bon_MotDePasse)
     else:
         print("Mot de passe non trouvé.")
+# Main function
+def main():
+    password_hash = input("Entrez le hash MD5 du mot de passe à cracker : ")
+    brute_force_password(password_hash)
 
 if __name__ == '__main__':
     main()
