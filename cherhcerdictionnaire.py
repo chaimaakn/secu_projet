@@ -38,7 +38,7 @@ def brute_force_password(password_hash, max_length=12, num_threads=None):
     global le_bon_MotDePasse
 
     # Limiting to alphanumeric characters for better performance
-    characters = string.ascii_letters + string.digits
+    characters = string.ascii_letters + string.digits+ string.punctuation
     if num_threads is None:
         num_threads = min(24, os.cpu_count() * 2)  # Use up to 24 threads or twice the number of CPU cores
 
