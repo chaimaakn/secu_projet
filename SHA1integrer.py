@@ -16,6 +16,9 @@ from passlib.hash import md5_crypt
 from passlib.hash import sha1_crypt
 import re
 import threading
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
@@ -602,26 +605,28 @@ def reduction_sha1(hash_value):
     return hash_obj.hexdigest()
 
 # Fonction pour retrouver le mot de passe à partir d'un hachage MD5
-def find_password(target_hash):
-    global dernier_bouton_clique
-    j=0
-    # Vérifier si le hachage cible correspond à un hachage initial
-    if target_hash in rainbow_table:
-        return rainbow_table[target_hash][0]
+rainbow_table = []
+def find_password(target_hash, start, end, rainbow_table,password_found):
+    for i in range(start, end):
+        start_hash, (password, end_hash) = rainbow_table[i]
+        if target_hash == start_hash:
+            return password
 
-    # Parcourir les chaînes de la table arc-en-ciel
-    for start_hash, (password, end_hash) in rainbow_table.items():
+    for i in range(start, end):
+        if password_found.is_set():
+            return None
+
+        start_hash, (password, end_hash) = rainbow_table[i]
         chain = [start_hash]
         current_hash = start_hash
         for _ in range(1000):
-            if dernier_bouton_clique==1:
-               current_hash = reduction_md5(current_hash)
+            if dernier_bouton_clique == 1:
+                current_hash = reduction_md5(current_hash)
             else:
                 current_hash = reduction_sha1(current_hash)
             chain.append(current_hash)
             if current_hash == target_hash:
-                # Reconstruire le mot de passe à partir de la chaîne
-                candidate=start_hash
+                candidate = start_hash
                 if dernier_bouton_clique==1:
                    for i in range(len(chain)-1):
                        password=candidate
@@ -631,35 +636,44 @@ def find_password(target_hash):
                        password=candidate
                        candidate = hashlib.md5(chain[i].encode()).hexdigest()
                 return password  
-                         
-    # Hachage non trouvé dans la table
     return None
-
-rainbow_table = {}
 
 # Fonction pour effectuer une attaque Rainbow
 def run_rainbow(entry_rainbow):
     target_hash = entry_rainbow.get().strip()
+    rainbow_table = []
 
-    # Charger la table arc-en-ciel depuis le fichier
-
-    if dernier_bouton_clique==1:
+    if dernier_bouton_clique == 1:
         with open('hash_table.txt', 'r') as file:
             for line in file:
                 start_hash, entry = line.strip().split(': ')
                 password, end_hash = entry.split(' -> ')
-                rainbow_table[start_hash] = (password, end_hash)
+                rainbow_table.append((start_hash, (password, end_hash)))
     else:
         with open('hash_table_sha1.txt', 'r') as file:
             for line in file:
                 start_hash, entry = line.strip().split(': ')
                 password, end_hash = entry.split(' -> ')
-                rainbow_table[start_hash] = (password, end_hash)
+                rainbow_table.append((start_hash, (password, end_hash)))
 
-    # Vérifier si le hachage cible est dans la table
-    password = find_password(target_hash)
+    num_threads = min(24, os.cpu_count() * 2)
+    chunk_size = len(rainbow_table) // num_threads
+    password_found = threading.Event()
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = []
+        for i in range(num_threads):
+            start = i * chunk_size
+            end = start + chunk_size
+            if i == num_threads - 1:
+                end = len(rainbow_table)
+            futures.append(executor.submit(find_password, target_hash, start, end, rainbow_table,password_found))
 
-    return password
+        for future in as_completed(futures):
+            password = future.result()
+            if password:
+                password_found.set()
+                return password
+    return None
 
 # Fonction pour afficher l'interface de l'attaque Rainbow
 def show_rainbow_attack_interface():

@@ -599,7 +599,6 @@ def reduction_sha1(hash_value):
 # Fonction pour retrouver le mot de passe à partir d'un hachage MD5
 def find_password(target_hash):
     global dernier_bouton_clique
-    j=0
     # Vérifier si le hachage cible correspond à un hachage initial
     if target_hash in rainbow_table:
         return rainbow_table[target_hash][0]
