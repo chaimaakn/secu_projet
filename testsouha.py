@@ -12,10 +12,15 @@ import sys
 import pickle
 import pyperclip
 from PIL import Image, ImageTk
+from hashlib import sha256
 from passlib.hash import md5_crypt
 from passlib.hash import sha1_crypt
+from passlib.hash import sha256_crypt
 import re
 import threading
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
@@ -38,13 +43,16 @@ dernier_bouton_clique = None
 def bouton1_clique(event):
     global dernier_bouton_clique
     dernier_bouton_clique = 1
-    # Instructions spécifiques pour le bouton 1
 
 # Fonction appelée lors du clic sur le bouton 2
 def bouton2_clique(event):
     global dernier_bouton_clique
-    dernier_bouton_clique = 2
-    # Instructions spécifiques pour le bouton 2
+    dernier_bouton_clique = 2  
+
+# Fonction appelée lors du clic sur le bouton 3
+def bouton3_clique(event):
+    global dernier_bouton_clique
+    dernier_bouton_clique = 3 
 
 # Fonction pour faire clignoter les points
 def blink_dots(label, delay=500):
@@ -67,6 +75,8 @@ CARACTERES = string.ascii_letters + string.digits + string.punctuation
 # Fonction pour calculer le hachage SHA1 d'un mot
 def sha1(mot):
     return hashlib.sha1(mot.encode()).hexdigest()
+def sha256(mot):
+    return hashlib.sha256(mot.encode()).hexdigest()
 
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
 def message_box_sha1(hashed_password):
@@ -89,6 +99,15 @@ def message_box_md5(hashed_password):
         return True
     return False
 
+def message_box_sha256(hashed_password):
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché en sha256 valide.", parent=root)
+        return True
+    if len(hashed_password) != 64 or not all(c in string.hexdigits for c in hashed_password):
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché en sha256 valide.", parent=root)
+        return True
+    return False
+
 def message_box_md5_crypt(hashed_password):
     if not hashed_password:
         messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de MD5_CRYPT.", parent=root)
@@ -108,9 +127,19 @@ def message_box_sha1_crypt(hashed_password):
         return True
     return False
 
+
+def message_box_sha256_crypt(hashed_password):
+    if not hashed_password:
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de SHA256_CRYPT.", parent=root)
+        return True
+    if len(hashed_password) != 43 or not all(c in string.ascii_letters + string.digits + './' for c in hashed_password):
+        messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide de SHA256_CRYPT.", parent=root)
+        return True
+    return False
+
 def valid_salt(salt):
     # Expression régulière pour vérifier le format du sel
-    pattern = r'^[0-9a-zA-Z./]{1,8}$'
+    pattern = r'^[0-9a-zA-Z./]{8,}$'
     return bool(re.match(pattern, salt))
 
 def messagebox_salt(salt):
@@ -131,30 +160,20 @@ def est_bon_mot(mot, hash_a_trouver):
     if var2.get()==1:
         if dernier_bouton_clique==1:
             return md5_crypt.using(salt=salt_hash,rounds=1).hash(mot) == hash_a_trouver
+        elif dernier_bouton_clique==2:
+           return sha1_crypt.using(salt=salt_hash,rounds=1).hash(mot) == hash_a_trouver
         else:
-            return sha1_crypt.using(salt=salt_hash,rounds=1).hash(mot) == hash_a_trouver
+            return sha256_crypt.using(salt=salt_hash,rounds=1000).hash(mot) == hash_a_trouver
     else:
         if dernier_bouton_clique==1:
             return md5(mot) == hash_a_trouver
-        else:
+        elif dernier_bouton_clique==2:
             return sha1(mot) == hash_a_trouver
-    
-password_found = False
-password_lock = threading.Lock() 
-le_bon_MotDePasse = None  
-'''def crack_password(password_hash):
+        else:
+            return sha256(mot) == hash_a_trouver
     
     
-    for length in range(1, 13):  # Longueur maximale du mot de passe : 12 caractères
-        for combination in itertools.product(CARACTERES, repeat=length):
-            password = ''.join(combination)
-            password_bytes = password.encode('utf-8')
-            password_md5 = hashlib.md5(password_bytes).hexdigest()
-            
-            if password_md5 == password_hash:
-                return password
-    
-    return None'''
+
 # Fonction pour trouver le bon mot
 def trouver_bon_mot(hash_a_trouver, lengths):
         global password_found
@@ -176,7 +195,7 @@ def trouver_bon_mot(hash_a_trouver, lengths):
                     
                    return 
                  
-            else:
+            elif dernier_bouton_clique==2:
                 password_sha1 = hashlib.sha1(password_bytes).hexdigest()
                 if password_sha1 == hash_a_trouver:
                  with password_lock:
@@ -184,6 +203,15 @@ def trouver_bon_mot(hash_a_trouver, lengths):
                     le_bon_MotDePasse = password
                     
                     return 
+            else:
+                password_sha256 = hashlib.sha256(password_bytes).hexdigest()
+                if password_sha256 == hash_a_trouver:
+                 with password_lock:
+                    password_found = True
+                    le_bon_MotDePasse = password
+                    
+                    return 
+
 
             
             
@@ -201,16 +229,23 @@ def retrouver_mot():
             if message_box_md5_crypt(hash_input)==True:
                return
             hash_input="$1$"+salt_hash+"$"+hash_input
-        else:
+        elif dernier_bouton_clique==2:
             if message_box_sha1_crypt(hash_input)==True:
                return
             hash_input="$sha1$1$"+salt_hash+"$"+hash_input
+        else: 
+            if message_box_sha256_crypt(hash_input)==True:
+              return
+            hash_input="$5$rounds=1000$"+salt_hash+"$"+hash_input
     else:
         if dernier_bouton_clique==1:
             if message_box_md5(hash_input)==True:
                 return
-        else:
+        elif dernier_bouton_clique==2:
              if message_box_sha1(hash_input)==True:
+                return
+        else:
+            if message_box_sha256(hash_input)==True:
                 return
     num_threads = 8  # Nombre de threads à utiliser
     thread_ranges = [(1, 2, 3, 4), (5, 6), (7,), (8,), (9,), (10,), (11,), (12,)]  # Plages de longueur pour chaque thread
@@ -236,6 +271,10 @@ def retrouver_mot():
         messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
     
 
+
+   
+
+
 def show_brute_force_interface():
     global entry_brut_force 
     global current_frame
@@ -260,7 +299,22 @@ def show_brute_force_interface():
     current_frame = result_frame_brute_force
     toggle_back_button(True)
     
-
+'''def run_brute_force():
+    
+    try:
+       global start_brute_force_button
+       global entry_brut_force
+       hashed_password = entry_brut_force.get().strip()
+       
+       if not hashed_password:
+            messagebox.showerror("Erreur", "Veuillez entrer un mot de passe haché valide.")
+            return
+       
+       retrouver_mot(hashed_password)
+       
+       
+    except Exception as e:
+        messagebox.showerror("Erreur", f"Une erreur s'est produite : {e}")     '''
 
 # Variable pour stocker la valeur actuelle de la barre de progression
 current_progress = 0
@@ -448,6 +502,11 @@ def return_to_previous_screen():
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
         toggle_back_button(True) 
+    elif current_frame==sha256_frame:
+        sha256_frame.place_forget()
+        convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
+        current_frame = convertisseur_frame
+        toggle_back_button(True) 
     elif current_frame == button_frame:
         pass
 
@@ -460,8 +519,11 @@ def crack_password():
     if dernier_bouton_clique==1:
         if message_box_md5(hashed_password)==True:
             return
-    else:
+    elif dernier_bouton_clique==2:
         if message_box_sha1(hashed_password)==True:
+            return
+    else:
+        if message_box_sha256(hashed_password)==True:
             return
     
     hide_all_frames()
@@ -508,7 +570,7 @@ def crack_password():
                     current_frame = result_frame
                     toggle_back_button(False)
                     return
-        else:
+        elif dernier_bouton_clique==2:
             for word in words:
                 sha1_hash = hashlib.sha1(word.encode()).hexdigest()
                 if hashed_password == sha1_hash:
@@ -518,6 +580,17 @@ def crack_password():
                     current_frame = result_frame
                     toggle_back_button(False)
                     return
+        else:
+            for word in words:
+                sha256_hash = hashlib.sha256(word.encode()).hexdigest()
+                if hashed_password == sha256_hash:
+                    result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                    password_label.config(text=word, fg=ACCENT_COLOR)
+                    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                    current_frame = result_frame
+                    toggle_back_button(False)
+                    return
+
 
 
         result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
@@ -534,16 +607,22 @@ def run_lookup_table():
     if dernier_bouton_clique==1:
         if message_box_md5(hashed_password)==True:
             return
-    else:
+    elif dernier_bouton_clique==2:
         if message_box_sha1(hashed_password)==True:
+            return
+    else:
+        if message_box_sha256(hashed_password)==True:
             return
         
     hide_all_frames()
     if dernier_bouton_clique==1:
         with open("password_dict.pkl", "rb") as file:
          password_dic = pickle.load(file)
-    else:
+    elif dernier_bouton_clique==2:
         with open("password_dict_sha1.pkl", "rb") as file:
+         password_dic = pickle.load(file)
+    else:
+        with open("password_dict_sha256.pkl", "rb") as file:
          password_dic = pickle.load(file)
 
     if hashed_password in password_dic:
@@ -596,64 +675,92 @@ def reduction_sha1(hash_value):
     hash_obj = hashlib.sha1(hash_value.encode())
     return hash_obj.hexdigest()
 
-# Fonction pour retrouver le mot de passe à partir d'un hachage MD5
-def find_password(target_hash):
-    global dernier_bouton_clique
-    # Vérifier si le hachage cible correspond à un hachage initial
-    if target_hash in rainbow_table:
-        return rainbow_table[target_hash][0]
+def reduction_sha256(hash_value):
+    hash_obj = hashlib.sha256(hash_value.encode())
+    return hash_obj.hexdigest()
 
-    # Parcourir les chaînes de la table arc-en-ciel
-    for start_hash, (password, end_hash) in rainbow_table.items():
+# Fonction pour retrouver le mot de passe à partir d'un hachage MD5
+rainbow_table = []
+def find_password(target_hash, start, end, rainbow_table,password_found):
+    for i in range(start, end):
+        start_hash, (password, end_hash) = rainbow_table[i]
+        if target_hash == start_hash:
+            return password
+
+    for i in range(start, end):
+        if password_found.is_set():
+            return None
+
+        start_hash, (password, end_hash) = rainbow_table[i]
         chain = [start_hash]
         current_hash = start_hash
         for _ in range(1000):
-            if dernier_bouton_clique==1:
-               current_hash = reduction_md5(current_hash)
-            else:
+            if dernier_bouton_clique == 1:
+                current_hash = reduction_md5(current_hash)
+            elif dernier_bouton_clique==2:
                 current_hash = reduction_sha1(current_hash)
+            else:
+                current_hash = reduction_sha256(current_hash)
             chain.append(current_hash)
             if current_hash == target_hash:
-                # Reconstruire le mot de passe à partir de la chaîne
-                candidate=start_hash
+                candidate = start_hash
                 if dernier_bouton_clique==1:
                    for i in range(len(chain)-1):
                        password=candidate
                        candidate = hashlib.md5(chain[i].encode()).hexdigest()
-                else: 
+                elif dernier_bouton_clique==2: 
                     for i in range(len(chain)-1):
                        password=candidate
-                       candidate = hashlib.md5(chain[i].encode()).hexdigest()
+                       candidate = hashlib.sha1(chain[i].encode()).hexdigest()
+                else:
+                    for i in range(len(chain)-1):
+                       password=candidate
+                       candidate = hashlib.sha256(chain[i].encode()).hexdigest()
                 return password  
-                         
-    # Hachage non trouvé dans la table
     return None
-
-rainbow_table = {}
 
 # Fonction pour effectuer une attaque Rainbow
 def run_rainbow(entry_rainbow):
     target_hash = entry_rainbow.get().strip()
+    rainbow_table = []
 
-    # Charger la table arc-en-ciel depuis le fichier
-
-    if dernier_bouton_clique==1:
+    if dernier_bouton_clique == 1:
         with open('hash_table.txt', 'r') as file:
             for line in file:
                 start_hash, entry = line.strip().split(': ')
                 password, end_hash = entry.split(' -> ')
-                rainbow_table[start_hash] = (password, end_hash)
-    else:
+                rainbow_table.append((start_hash, (password, end_hash)))
+    elif dernier_bouton_clique==2:
         with open('hash_table_sha1.txt', 'r') as file:
             for line in file:
                 start_hash, entry = line.strip().split(': ')
                 password, end_hash = entry.split(' -> ')
-                rainbow_table[start_hash] = (password, end_hash)
+                rainbow_table.append((start_hash, (password, end_hash)))
+    else: 
+        with open('hash_table_sha256.txt', 'r') as file:
+            for line in file:
+                start_hash, entry = line.strip().split(': ')
+                password, end_hash = entry.split(' -> ')
+                rainbow_table.append((start_hash, (password, end_hash)))
 
-    # Vérifier si le hachage cible est dans la table
-    password = find_password(target_hash)
+    num_threads = min(24, os.cpu_count() * 2)
+    chunk_size = len(rainbow_table) // num_threads
+    password_found = threading.Event()
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = []
+        for i in range(num_threads):
+            start = i * chunk_size
+            end = start + chunk_size
+            if i == num_threads - 1:
+                end = len(rainbow_table)
+            futures.append(executor.submit(find_password, target_hash, start, end, rainbow_table,password_found))
 
-    return password
+        for future in as_completed(futures):
+            password = future.result()
+            if password:
+                password_found.set()
+                return password
+    return None
 
 # Fonction pour afficher l'interface de l'attaque Rainbow
 def show_rainbow_attack_interface():
@@ -688,6 +795,9 @@ def launch_rainbow_attack(entry_hashed_password):
     elif dernier_bouton_clique==2:
         if message_box_sha1(hashed_password)==True:
             return
+    else:
+        if message_box_sha256(hashed_password)==True:
+            return
     
     # Cacher le champ de texte et le bouton "Cracker"
     label_rainbow.place_forget()
@@ -708,25 +818,36 @@ def launch_rainbow_attack(entry_hashed_password):
     current_frame = progress_bar
     toggle_back_button(False)
     
-    # Boucle de progression
-    for progress in tqdm(range(101), desc="Recherche...", unit="%", leave=False):
+    # Boucle de progression jusqu'à 50%
+    for progress in tqdm(range(51), desc="Recherche...", unit="%", leave=False):
         current_progress = progress
         progress_bar.config(value=current_progress)
         percentage_label.config(text=f"{current_progress}%")
         root.update()
         time.sleep(0.05)
-    
+
+    # Exécution de run_rainbow
+    result = run_rainbow(entry_hashed_password)
+
+    # Boucle de progression de 50% à 100%
+    for progress in tqdm(range(51, 101), desc="Recherche...", unit="%", leave=False):
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        percentage_label.config(text=f"{current_progress}%")
+        root.update()
+        time.sleep(0.05)
+
     # Réinitialisation de la barre de progression
     reset_progress_bar()
-    
+
     # Cacher les éléments associés à la barre de progression
     progress_bar.place_forget()
     percentage_label.place_forget()
     blink_label.place_forget()
     toggle_back_button(False)
-    
+
     # Affichage des résultats
-    result = run_rainbow(entry_hashed_password)
+    # result = run_rainbow(entry_hashed_password)  # Cette ligne a été déplacée plus haut
     if result:
         result_label_rainbow.config(text="Le mot de passe est :", fg=FG_COLOR)
         password_label_rainbow.config(text=result, fg=ACCENT_COLOR)
@@ -788,6 +909,7 @@ def test_password():
     reset_button_test_password.pack(side=tk.LEFT, padx=10)  # Afficher le bouton "Réinitialiser"
     current_frame = result_frame_test_password
     toggle_back_button(True)
+
 def show_advice():
     global current_frame
     
@@ -822,6 +944,7 @@ def md5_function():
     label_copie.place(relx=0.5,rely=0.8,anchor='center')
     current_frame=md5_frame
     toggle_back_button(True)
+
 def show_interface_sha1():
     global current_frame
     
@@ -842,6 +965,28 @@ def sha1_function():
     pyperclip.copy(sha1(password))
     label_copie_sha1.place(relx=0.5,rely=0.8,anchor='center')
     current_frame=sha1_frame
+    toggle_back_button(True)
+
+def show_interface_sha256():
+    global current_frame
+    
+    hide_all_frames()
+    sha256_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
+    label_sha256.place(relx=0.5, rely=0.3, anchor='center')
+    entry_sha256.place(relx=0.5, rely=0.4, anchor='center')
+    sha256_search_button.place(relx=0.5, rely=0.48, anchor='center')
+    current_frame=sha256_frame
+    toggle_back_button(True)
+    
+def sha256_function():
+    global current_frame
+    
+    password=entry_sha256.get().strip()
+    label_result_sha256.config(text="Hachage sha256:\n"+sha256(password))
+    label_result_sha256.place(relx=0.5,rely=0.6,anchor='center')
+    pyperclip.copy(sha256(password))
+    label_copie_sha256.place(relx=0.5,rely=0.8,anchor='center')
+    current_frame=sha256_frame
     toggle_back_button(True)
 
 # Fonction pour réinitialiser l'interface
@@ -939,10 +1084,14 @@ def salt():
             return
         chaine_inter = "$1$" + salt_hash + "$"
         hashed_password=chaine_inter+hashed_password
-    else:
+    elif dernier_bouton_clique==2:
         if message_box_sha1_crypt(hashed_password)==True:
             return
         hashed_password="$sha1$1$"+salt_hash+"$"+hashed_password
+    else:
+        if message_box_sha256_crypt(hashed_password)==True:
+            return
+        hashed_password="$5$rounds=1000$"+salt_hash+"$"+hashed_password
     
 
     hide_all_frames()
@@ -990,7 +1139,7 @@ def salt():
                     current_frame = result_frame
                     toggle_back_button(False)
                     return
-        else:
+        elif dernier_bouton_clique==2:
             for word in words:
                 sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(word)
                 if hashed_password == sha1_hash:
@@ -1000,6 +1149,17 @@ def salt():
                     current_frame = result_frame
                     toggle_back_button(False)
                     return
+        else:
+            for word in words:
+                sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(word)
+                if hashed_password == sha256_hash:
+                    result_label.config(text=f"Le mot de passe est :", fg=FG_COLOR)
+                    password_label.config(text=word, fg=ACCENT_COLOR)
+                    result_frame.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
+                    current_frame = result_frame
+                    toggle_back_button(False)
+                    return
+
 
         result_label.config(text="Tentative échouée", fg=ACCENT_COLOR)
         password_label.config(text="")
@@ -1107,6 +1267,9 @@ md5_button.pack(pady=10)
 sha1_button = Button(convertisseur_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activeforeground=ACCENT_COLOR, command=show_interface_sha1)
 sha1_button.pack(pady=10)
 
+sha256_button = Button(convertisseur_frame, text=" SHA256 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR, activeforeground=ACCENT_COLOR, command=show_interface_sha256)
+sha256_button.pack(pady=10)
+
 # l'interface du choix de la fonction de hachage
 choix_fct_frame = tk.Frame(root, bg=BG_COLOR)
 
@@ -1120,6 +1283,10 @@ md5_fct_button.pack(pady=10)
 sha1_fct_button = Button(choix_fct_frame, text=" SHA1 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
 sha1_fct_button.bind("<Button-1>",bouton2_clique)
 sha1_fct_button.pack(pady=10)
+
+sha256_fct_button=Button(choix_fct_frame, text=" SHA256 ", font=(FONT_FAMILY, FONT_SIZE), fg=FG_COLOR, bg=BUTTON_COLOR,  activeforeground=ACCENT_COLOR, command=lambda: toggle_frames(choix_fct_frame,attack_buttons_frame))
+sha256_fct_button.bind("<Button-1>",bouton3_clique)
+sha256_fct_button.pack(pady=10)
 
 def toggle_frames(hide_frame, show_frame):
     global current_frame
@@ -1173,7 +1340,9 @@ dic_title=tk.Label(main_frame, text="Attaque par dictionnaire", fg=ACCENT_COLOR,
 label_brute_force = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 start_brute_force_button = Button(main_frame, text="Rechercher", command=retrouver_mot, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, width=150)
 brute_force_title=tk.Label(main_frame, text="Attaque brute force", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
-
+password_found = False
+password_lock = threading.Lock() 
+le_bon_MotDePasse = None  
 # Bouton pour cracker le mot de passe
 var2 = tk.IntVar()
 c2 = tk.Checkbutton(main_frame, text='Salt',variable=var2, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt2,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
@@ -1298,6 +1467,14 @@ label_sha1=tk.Label(sha1_frame, text="entrez le mot que vous voulez haché en sh
 label_result_sha1=tk.Label(sha1_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 sha1_search_button=Button(sha1_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha1_function)
 label_copie_sha1=tk.Label(sha1_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
+
+sha256_frame= tk.Frame(main_frame, bg=BG_COLOR)
+entry_sha256=tk.Entry(sha256_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_sha256=tk.Label(sha256_frame, text="entrez le mot que vous voulez haché en sha256", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_result_sha256=tk.Label(sha256_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+sha256_search_button=Button(sha256_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha256_function)
+label_copie_sha256=tk.Label(sha256_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
+
 toggle_back_button(False)
 
 '''root.bind_class("Entry", "<Control-c>", handle_shortcuts)
