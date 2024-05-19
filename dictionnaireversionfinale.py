@@ -3,7 +3,7 @@ import hashlib
 file_name = "liste.txt"
 #exmple de hachage on metre se que on veut pour que le prof verifie 
 #original_md5 = input("Entrez le mot de passe haché (MD5): ")
-original_md5 = 'ec0e2603172c73a8b644bb9456c1ff6e'  # batman
+original_md5 = '0012359dba0191e6aa22b725ab83f0d9'  # batman
 
 with open(file_name, 'r') as file_to_check:
     # lire le contenu du fichier ligne par ligne
