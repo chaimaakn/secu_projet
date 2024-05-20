@@ -16,7 +16,7 @@ def find_password(target_hash, start, end, rainbow_table):
     # Vérifier si le hachage cible correspond à un hachage initial dans la plage
     for i in range(start, end):
         start_hash, (password, end_hash) = rainbow_table[i]
-        if target_hash == start_hash or target_hash == end_hash:
+        if target_hash == start_hash:
             return password
 
     for i in range(start, end):
@@ -33,7 +33,7 @@ def find_password(target_hash, start, end, rainbow_table):
                 # Reconstruire le mot de passe à partir de la chaîne
                 candidate = start_hash
                 for j in range(len(chain) - 1):
-                    #password = candidate
+                    password = candidate
                     candidate = hashlib.md5(chain[j].encode()).hexdigest()
                 return password
 
