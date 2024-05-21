@@ -20,7 +20,9 @@ import re
 import threading
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+import concurrent.futures
+import threading
+import os
 # Couleurs
 BG_COLOR = "#000000"
 FG_COLOR = "#00ff00"
@@ -174,53 +176,84 @@ def est_bon_mot(mot, hash_a_trouver):
     
     
 
-# Fonction pour trouver le bon mot
-def trouver_bon_mot(hash_a_trouver, lengths):
-        global password_found
-        global le_bon_MotDePasse
-        for length in lengths:
-         for combination in itertools.product(CARACTERES, repeat=length):
-            with password_lock:
-                if password_found:
-                    return
-            
-            password = ''.join(combination)
-            password_bytes = password.encode('utf-8')
-            if dernier_bouton_clique==1:
+password_found = False
+password_lock = threading.Lock()
+le_bon_MotDePasse = None       
+def generate_passwords(characters, length):
+    for combination in itertools.product(characters, repeat=length):
+        yield ''.join(combination)
+
+def thread_function(password_hash, characters, length):
+    global password_found
+    global le_bon_MotDePasse
+
+    for password in generate_passwords(characters, length):
+        if password_found:
+            return
+
+        password_bytes = password.encode('utf-8')
+        if dernier_bouton_clique==1:
                  password_md5 = hashlib.md5(password_bytes).hexdigest()
-                 if password_md5 == hash_a_trouver:
+                 if password_md5 == password_hash:
                    with password_lock:
-                    password_found = True
-                    le_bon_MotDePasse = password
+                    if not password_found:
+                       password_found = True
+                       le_bon_MotDePasse = password
                     
                    return 
                  
-            elif dernier_bouton_clique==2:
+        elif dernier_bouton_clique==2:
                 password_sha1 = hashlib.sha1(password_bytes).hexdigest()
-                if password_sha1 == hash_a_trouver:
+                if password_sha1 == password_hash:
                  with password_lock:
-                    password_found = True
-                    le_bon_MotDePasse = password
+                    if not password_found:
+                      password_found = True
+                      le_bon_MotDePasse = password
                     
                     return 
-            else:
+        else:
                 password_sha256 = hashlib.sha256(password_bytes).hexdigest()
-                if password_sha256 == hash_a_trouver:
+                if password_sha256 == password_hash:
                  with password_lock:
-                    password_found = True
-                    le_bon_MotDePasse = password
+                    if not password_found:
+                      password_found = True
+                      le_bon_MotDePasse = password
                     
                     return 
 
 
-            
-            
 
-    
+     
+
+# Main brute force function
+def brute_force_password(password_hash, max_length=12, num_threads=None):
+    global le_bon_MotDePasse
+
+    # Limiting to alphanumeric characters for better performance
+    characters = string.ascii_letters + string.digits+ string.punctuation
+    if num_threads is None:
+        num_threads = min(24, os.cpu_count() * 2)  # Use up to 24 threads or twice the number of CPU cores
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = []
+        for length in range(1, max_length + 1):
+            futures.append(executor.submit(thread_function, password_hash, characters, length))
+
+        for future in concurrent.futures.as_completed(futures):
+            if password_found:
+                break
+
+    if le_bon_MotDePasse:
+        print("Mot de passe trouvé !")
+        print("Le bon mot de passe est :", le_bon_MotDePasse)
+    else:
+        print("Mot de passe non trouvé.")
+
 # Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
 def retrouver_mot():
-    global dernier_bouton_clique
-    hash_input=entry_brut_force.get().strip()
+    global le_bon_MotDePasse
+
+    hash_input = entry_brut_force.get().strip()
     if var2.get()==1:
         salt_hash=entry_salt2.get().strip()
         if messagebox_salt(salt_hash)== True:
@@ -247,32 +280,15 @@ def retrouver_mot():
         else:
             if message_box_sha256(hash_input)==True:
                 return
-    num_threads = 8  # Nombre de threads à utiliser
-    thread_ranges = [(1, 2, 3, 4), (5, 6), (7,), (8,), (9,), (10,), (11,), (12,)]  # Plages de longueur pour chaque thread
-    
-    threads = []
-    for lengths in thread_ranges:
-           thread = threading.Thread(target=trouver_bon_mot, args=(hash_input, lengths))
-           threads.append(thread)
-           thread.start()
-    
-    for thread in threads:
-           thread.join()   
-    
- 
-    if password_found:
-        
+
+    brute_force_password(hash_input)  # Appel de la fonction brute_force_password avec le hash fourni
+
+    if le_bon_MotDePasse:
         retry_button_brute_force.pack(side=tk.LEFT, padx=10)
         result_label_brute_force.config(text=f"Le mot est: {le_bon_MotDePasse} ", fg=FG_COLOR)
         toggle_back_button(False)
-
-        
     else:
         messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
-    
-
-
-   
 
 
 def show_brute_force_interface():
