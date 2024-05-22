@@ -785,7 +785,7 @@ def hide_all_frames():
     salt_hyb_label.place_forget()
     entry_hyb_salt.place_forget()
     bouton_hyb_salt.place_forget()
-    c3.destroy()
+    c4.destroy()
     crack_dic_hyb_button.place_forget()
     label_dic_hyb.place_forget()
     entry_dic_hyb.place_forget()
@@ -794,6 +794,8 @@ def hide_all_frames():
     password_label_hyb.config(text="")
     retry_button_hyb.pack_forget() 
     entry_dic_hyb.delete(0, tk.END)
+    c5.destroy()
+
     
 
 
@@ -959,6 +961,9 @@ def return_to_previous_screen():
         label_copie.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
+        var5.set(0) 
+        c5.place_forget()
+        c5.destroy()
         toggle_back_button(True) 
     elif current_frame==sha1_frame:
         sha1_frame.place_forget()
@@ -1396,13 +1401,16 @@ def show_advice():
     current_frame = advice_frame 
       
 def show_interface_md5():
-    global current_frame
+    global current_frame,c5
     
     hide_all_frames()
     md5_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
     label_md5.place(relx=0.5, rely=0.3, anchor='center')
     entry_md5.place(relx=0.5, rely=0.4, anchor='center')
-    md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
+    md5_search_button.place(relx=0.5, rely=0.55, anchor='center')
+    c5 = tk.Checkbutton(main_frame, text='Salt',variable=var5, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    c5.pack(expand=1,pady=10)
+    
     current_frame=md5_frame
     toggle_back_button(True)
    
@@ -1417,6 +1425,17 @@ def md5_function():
     label_copie.place(relx=0.5,rely=0.8,anchor='center')
     current_frame=md5_frame
     toggle_back_button(True)
+    
+def md5_function_salt():
+    global current_frame
+    
+    password=entry_md5.get().strip()
+    label_result_md5.config(text="Hachage md5:\n"+md5(password))
+    label_result_md5.place(relx=0.5,rely=0.8,anchor='center')
+    pyperclip.copy(md5(password))
+    label_copie.place(relx=0.5,rely=0.9,anchor='center')
+    current_frame=md5_frame
+    toggle_back_button(True)    
 
 def show_interface_sha1():
     global current_frame
@@ -1587,8 +1606,21 @@ def check_salt4():
         crack_dic_hyb_button.place_forget()
         salt_hyb_label.place(relx=0.5, rely=0.6, anchor='center') 
         entry_hyb_salt.place(relx=0.5, rely=0.7, anchor='center') 
-        bouton_hyb_salt.place(relx=0.5, rely=0.8, anchor='center')            
-        
+        bouton_hyb_salt.place(relx=0.5, rely=0.8, anchor='center')    
+                
+def md5_salt():
+    if var5.get()==0:
+        md5_search_button.place(relx=0.5, rely=0.55, anchor='center')
+        entry_md5_salt.place_forget()
+        md5_search_button_salt.place_forget()
+    else:
+        md5_search_button.place_forget()
+        entry_md5_salt.place(relx=0.5, rely=0.55, anchor='center')
+        md5_search_button_salt.place(relx=0.5, rely=0.65, anchor='center')
+    x=1        
+    
+    
+    
 def salt():
     global current_frame, current_progress, dernier_bouton_clique,c1
     hashed_password = entry_hashed_password.get().strip()
@@ -2088,10 +2120,14 @@ advice_text = """
 advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE), wraplength=450, justify="left")
 #déclaration des frames du convertisseur:
 md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
+var5 = tk.IntVar()
+c5 = tk.Checkbutton(main_frame, text='Salt',variable=var3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 entry_md5=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+entry_md5_salt=tk.Entry(main_frame,width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 label_md5=tk.Label(main_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_result_md5=tk.Label(main_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 md5_search_button=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
+md5_search_button_salt=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function_salt)
 label_copie=tk.Label(main_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
 sha1_frame= tk.Frame(main_frame, bg=BG_COLOR)
 entry_sha1=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font,highlightthickness=0.5)
