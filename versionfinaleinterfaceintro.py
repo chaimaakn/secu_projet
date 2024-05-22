@@ -2123,7 +2123,7 @@ advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR
 #déclaration des frames du convertisseur:
 md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
 var5 = tk.IntVar()
-c5 = tk.Checkbutton(main_frame, text='Salt',variable=var3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+c5 = tk.Checkbutton(main_frame, text='Salt',variable=var5, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 entry_md5=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 entry_md5_salt=tk.Entry(main_frame,width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 label_md5=tk.Label(main_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
