@@ -156,11 +156,14 @@ def md5(mot):
     return hashlib.md5(mot.encode()).hexdigest()
 
 
+
+
+
+
 def apply_transformations(base_password):
     """Applique différentes transformations sur un mot de passe de base."""
     # Vous pouvez ajouter autant de transformations que vous le souhaitez
     transformations = [
-        base_password,
         base_password.upper(),
         base_password.lower(),
         base_password.capitalize(),
@@ -171,7 +174,67 @@ def apply_transformations(base_password):
     ]
     return transformations
 
-def dictionary_attack():
+def dictionary_attack(hashed_password,salt_hash):
+    global current_frame, current_progress
+    with open("liste.txt", "r") as file:
+     password_list = [line.strip() for line in file]
+    for base_password in password_list:
+        transformations = apply_transformations(base_password)
+        if var3.get()==0:
+                if dernier_bouton_clique == 1:
+                   for password in password_list:
+                       if hashed_password == hashlib.md5(password.encode()).hexdigest():
+                        return password
+                   for password in transformations:
+                      md5_hash = hashlib.md5(password.encode()).hexdigest()
+                      if hashed_password == md5_hash:
+                        return password
+                
+                elif dernier_bouton_clique==2:
+                    for password in password_list:
+                       if hashed_password == hashlib.sha1(password.encode()).hexdigest():
+                        return password
+                    for password in transformations:
+                      sha1_hash = hashlib.sha1(password.encode()).hexdigest()
+                      if hashed_password == sha1_hash:
+                        return password
+                else:
+                    for password in password_list:
+                       if hashed_password == hashlib.sha256(password.encode()).hexdigest():
+                        return password
+                    for password in transformations:
+                      sha256_hash = hashlib.sha256(password.encode()).hexdigest()
+                      if hashed_password == sha256_hash:
+                        return password
+        else:
+                if dernier_bouton_clique == 1:
+                    for password in password_list:
+                       if hashed_password == md5_crypt.using(salt=salt_hash).hash(password):
+                        return password
+                    for password in transformations:
+                       md5_hash = md5_crypt.using(salt=salt_hash).hash(password)
+                       if hashed_password == md5_hash:
+                        return password
+                elif dernier_bouton_clique==2:
+                    for password in password_list:
+                       if hashed_password == sha1_crypt.using(salt=salt_hash,rounds=1).hash(password):
+                        return password
+                    for password in transformations:
+                       sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(password)
+                       if hashed_password == sha1_hash:
+                        return password
+                else:
+                    for password in password_list:
+                       if hashed_password == sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password):
+                        return password
+                    for password in transformations:
+                      sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password)
+                      if hashed_password == sha256_hash:
+                        return password    
+
+    return None
+
+def launch_dic_aml_attack():
     global current_frame, current_progress, dernier_bouton_clique,c3
     hashed_password = entry_dic_aml.get().strip()
     salt_hash=entry_aml_salt.get().strip()
@@ -202,112 +265,67 @@ def dictionary_attack():
              return
             hashed_password="$5$rounds=1000$"+salt_hash+"$"+hashed_password
 
+    
+    # Cacher le champ de texte et le bouton "Cracker"
+
     hide_all_frames()
-    # Cacher tous les widgets sauf la barre de progression et le label clignotant
-    label_dic_aml.place_forget()
-    entry_dic_aml.place_forget()
-    crack_dic_aml_button.place_forget()
-    result_frame_aml.place_forget()
-
+    
+    # Cacher le résultat précédent s'il y en a un
+    password_label_aml.pack_forget()
+    
+    # Affichage de la barre de progression et des autres éléments associés
+    progress_bar.place(relx=0.5, rely=0.35, anchor='center')
     progress_bar.config(maximum=100)
-    progress_bar.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
-    percentage_label.place(relx=0.5, rely=0.28, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
-    blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
-    blink_dots(blink_label)  # Démarrer le clignotement des points
+    progress_bar.start()
+    progress_bar.step(0)
+    percentage_label.place(relx=0.5, rely=0.28, anchor='center')
+    blink_label.place(relx=0.5, rely=0.45, anchor='center')
+    blink_dots(blink_label)
     current_frame = progress_bar
+    toggle_back_button(False)
     c3.destroy()
-    toggle_back_button(True)
-
-
-    for progress in tqdm(range(101), desc="Chercher...", unit="%", leave=False):
+    # Boucle de progression jusqu'à 50%
+    for progress in tqdm(range(51), desc="Recherche...", unit="%", leave=False):
         current_progress = progress
         progress_bar.config(value=current_progress)
         percentage_label.config(text=f"{current_progress}%")
         root.update()
         time.sleep(0.05)
 
-    reset_progress_bar()  # Réinitialiser la barre de progression après la boucle
+    # Exécution de run_rainbow
+    result = dictionary_attack(hashed_password,salt_hash)
 
-    progress_bar.place_forget()  # Cacher la barre de progression
-    percentage_label.place_forget()  # Cacher le label de pourcentage
-    blink_label.place_forget()  # Cacher le label clignotant
+    # Boucle de progression de 50% à 100%
+    for progress in tqdm(range(51, 101), desc="Recherche...", unit="%", leave=False):
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        percentage_label.config(text=f"{current_progress}%")
+        root.update()
+        time.sleep(0.05)
 
-    """Effectue une attaque par dictionnaire améliorée."""
-    with open("liste.txt", "r") as file:
-     password_list = [line.strip() for line in file]
-    for base_password in password_list:
-        transformations = apply_transformations(base_password)
-        if current_frame == progress_bar:
-            if var3.get()==0:
-                if dernier_bouton_clique == 1:
-                   for password in transformations:
-                      md5_hash = hashlib.md5(password.encode()).hexdigest()
-                      if hashed_password == md5_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                
-                elif dernier_bouton_clique==2:
-                    for password in transformations:
-                      sha1_hash = hashlib.sha1(password.encode()).hexdigest()
-                      if hashed_password == sha1_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                else:
-                    for password in transformations:
-                      sha256_hash = hashlib.sha256(password.encode()).hexdigest()
-                      if hashed_password == sha256_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-            else:
-                if dernier_bouton_clique == 1:
-                    for password in transformations:
-                       md5_hash = md5_crypt.using(salt=salt_hash).hash(password)
-                       if hashed_password == md5_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                elif dernier_bouton_clique==2:
-                    for password in transformations:
-                       sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(password)
-                       if hashed_password == sha1_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                else:
-                    for password in transformations:
-                      sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password)
-                      if hashed_password == sha256_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
+    # Réinitialisation de la barre de progression
+    reset_progress_bar()
 
-    result_label_aml.config(text="Tentative échouée", fg=ACCENT_COLOR)
-    password_label_aml.config(text="")
-    result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-    current_frame = result_frame_aml
+    # Cacher les éléments associés à la barre de progression
+    progress_bar.place_forget()
+    percentage_label.place_forget()
+    blink_label.place_forget()
     toggle_back_button(False)
-    return None
+
+    # Affichage des résultats
+    if result:
+        result_label_aml.config(text="Le mot de passe est :", fg=FG_COLOR)
+        password_label_aml.config(text=result, fg=ACCENT_COLOR)
+        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center') 
+        password_label_aml.pack(pady=5) 
+        retry_button_aml.pack(side=tk.LEFT, padx=10)
+        current_frame = result_frame_aml
+        
+    else:
+        result_label_aml.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        retry_button_aml.pack(pady=15)
+        
+    toggle_back_button(False)
 
 # Fonction pour afficher l'interface de l'attaque par dictionnaire
 def show_dictionaryAmeliore_attack():
@@ -332,12 +350,104 @@ def brute_force_extension(base_password, charset, max_length=2):
         for combo in itertools.product(charset, repeat=length):
             yield base_password + ''.join(combo)
 
-def hybrid_attack(charset="0123456789!@#"):
-    """Effectue une attaque hybride sur le hash cible."""
-    global current_frame, current_progress, dernier_bouton_clique,c3
-    hashed_password = entry_dic_aml.get().strip()
-    salt_hash=entry_aml_salt.get().strip()
-    if var3.get()==0:
+def hybrid_attack(hashed_password,salt_hash,charset="0123456789!@#"):
+    global current_frame, current_progress
+
+    with open("liste.txt", "r") as file:
+     password_list = [line.strip() for line in file]
+    for base_password in password_list:
+        transformations = apply_transformations(base_password)
+        if var4.get()==0:
+            if dernier_bouton_clique == 1:
+                   for password in password_list:
+                       if hashed_password == hashlib.md5(password.encode()).hexdigest():
+                        return password
+                   for password in transformations:
+                      md5_hash = hashlib.md5(password.encode()).hexdigest()
+                      if hashed_password == md5_hash:
+                        return password
+                   for password in transformations:
+                     for extended_password in brute_force_extension(password, charset):
+                       md5_hash = hashlib.md5(extended_password.encode()).hexdigest()
+                       if hashed_password == md5_hash:
+                        return extended_password
+                
+                
+            elif dernier_bouton_clique==2:
+                    for password in password_list:
+                       if hashed_password == hashlib.sha1(password.encode()).hexdigest():
+                        return password
+                    for password in transformations:
+                      sha1_hash = hashlib.sha1(password.encode()).hexdigest()
+                      if hashed_password == sha1_hash:
+                        return password
+                    for password in transformations:
+                     for extended_password in brute_force_extension(password, charset):
+                      sha1_hash = hashlib.sha1(extended_password.encode()).hexdigest()
+                      if hashed_password == sha1_hash:
+                        return extended_password
+            else:
+                    for password in password_list:
+                       if hashed_password == hashlib.sha256(password.encode()).hexdigest():
+                        return password
+                    for password in transformations:
+                      sha256_hash = hashlib.sha256(password.encode()).hexdigest()
+                      if hashed_password == sha256_hash:
+                        return password
+                    for password in transformations:
+                     for extended_password in brute_force_extension(password, charset):
+                      sha256_hash = hashlib.sha256(extended_password.encode()).hexdigest()
+                      if hashed_password == sha256_hash:
+                        return extended_password
+        else:
+            if dernier_bouton_clique == 1:
+                    for password in password_list:
+                       if hashed_password == md5_crypt.using(salt=salt_hash).hash(password):
+                        return password
+                    for password in transformations:
+                       md5_hash = md5_crypt.using(salt=salt_hash).hash(password)
+                       if hashed_password == md5_hash:
+                        return password
+                    for password in transformations:
+                      for extended_password in brute_force_extension(password, charset):
+                       md5_hash = md5_crypt.using(salt=salt_hash).hash(extended_password)
+                       if hashed_password == md5_hash:
+                        return extended_password
+            elif dernier_bouton_clique==2:
+                    for password in password_list:
+                       if hashed_password == sha1_crypt.using(salt=salt_hash,rounds=1).hash(password):
+                        return password
+                    for password in transformations:
+                       sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(password)
+                       if hashed_password == sha1_hash:
+                        return password
+                    for password in transformations:
+                      for extended_password in brute_force_extension(password, charset):
+                       sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(extended_password)
+                       if hashed_password == sha1_hash:
+                        return extended_password
+            else:
+                    for password in password_list:
+                       if hashed_password == sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password):
+                        return password
+                    for password in transformations:
+                      sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password)
+                      if hashed_password == sha256_hash:
+                        return password
+                    for password in transformations:
+                     for extended_password in brute_force_extension(password, charset):
+                      sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(extended_password)
+                      if hashed_password == sha256_hash:
+                        return extended_password    
+
+    return None
+        
+  
+def launch_hybride_attack():
+    global current_frame, current_progress, dernier_bouton_clique,c4
+    hashed_password = entry_dic_hyb.get().strip()
+    salt_hash=entry_hyb_salt.get().strip()
+    if var4.get()==0:
         if dernier_bouton_clique==1:
             if message_box_md5(hashed_password)==True:
              return
@@ -364,183 +474,83 @@ def hybrid_attack(charset="0123456789!@#"):
              return
             hashed_password="$5$rounds=1000$"+salt_hash+"$"+hashed_password
 
+    
+    # Cacher le champ de texte et le bouton "Cracker"
+
     hide_all_frames()
-    # Cacher tous les widgets sauf la barre de progression et le label clignotant
-    label_dic_aml.place_forget()
-    entry_dic_aml.place_forget()
-    crack_dic_aml_button.place_forget()
-    result_frame_aml.place_forget()
-
+    
+    # Cacher le résultat précédent s'il y en a un
+    password_label_hyb.pack_forget()
+    
+    # Affichage de la barre de progression et des autres éléments associés
+    progress_bar.place(relx=0.5, rely=0.35, anchor='center')
     progress_bar.config(maximum=100)
-    progress_bar.place(relx=0.5, rely=0.35, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
-    percentage_label.place(relx=0.5, rely=0.28, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le haut
-    blink_label.place(relx=0.5, rely=0.45, anchor='center')  # Centrer en hauteur et ajuster légèrement vers le bas
-    blink_dots(blink_label)  # Démarrer le clignotement des points
+    progress_bar.start()
+    progress_bar.step(0)
+    percentage_label.place(relx=0.5, rely=0.28, anchor='center')
+    blink_label.place(relx=0.5, rely=0.45, anchor='center')
+    blink_dots(blink_label)
     current_frame = progress_bar
-    c3.destroy()
-    toggle_back_button(True)
-
-
-    for progress in tqdm(range(101), desc="Chercher...", unit="%", leave=False):
+    toggle_back_button(False)
+    c4.destroy()
+    # Boucle de progression jusqu'à 50%
+    for progress in tqdm(range(51), desc="Recherche...", unit="%", leave=False):
         current_progress = progress
         progress_bar.config(value=current_progress)
         percentage_label.config(text=f"{current_progress}%")
         root.update()
         time.sleep(0.05)
 
-    reset_progress_bar()  # Réinitialiser la barre de progression après la boucle
+    # Exécution de run_rainbow
+    result = hybrid_attack(hashed_password,salt_hash)
 
-    progress_bar.place_forget()  # Cacher la barre de progression
-    percentage_label.place_forget()  # Cacher le label de pourcentage
-    blink_label.place_forget()  # Cacher le label clignotant
+    # Boucle de progression de 50% à 100%
+    for progress in tqdm(range(51, 101), desc="Recherche...", unit="%", leave=False):
+        current_progress = progress
+        progress_bar.config(value=current_progress)
+        percentage_label.config(text=f"{current_progress}%")
+        root.update()
+        time.sleep(0.05)
 
-    """Effectue une attaque par dictionnaire améliorée."""
-    with open("liste.txt", "r") as file:
-     password_list = [line.strip() for line in file]
-    for base_password in password_list:
-        transformations = apply_transformations(base_password)
-        if current_frame == progress_bar:
-            if var3.get()==0:
-                if dernier_bouton_clique == 1:
-                   for password in transformations:
-                      md5_hash = hashlib.md5(password.encode()).hexdigest()
-                      if hashed_password == md5_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                
-                elif dernier_bouton_clique==2:
-                    for password in transformations:
-                      sha1_hash = hashlib.sha1(password.encode()).hexdigest()
-                      if hashed_password == sha1_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                else:
-                    for password in transformations:
-                      sha256_hash = hashlib.sha256(password.encode()).hexdigest()
-                      if hashed_password == sha256_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-            else:
-                if dernier_bouton_clique == 1:
-                    for password in transformations:
-                       md5_hash = md5_crypt.using(salt=salt_hash).hash(password)
-                       if hashed_password == md5_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                elif dernier_bouton_clique==2:
-                    for password in transformations:
-                       sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(password)
-                       if hashed_password == sha1_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                else:
-                    for password in transformations:
-                      sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password)
-                      if hashed_password == sha256_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                    # Appliquer la force brute avec extensions sur chaque transformation
-            if var3.get()==0:
-                if dernier_bouton_clique == 1:
-                   for password in transformations:
-                      md5_hash = hashlib.md5(password.encode()).hexdigest()
-                      if hashed_password == md5_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                
-                elif dernier_bouton_clique==2:
-                    for password in transformations:
-                     for extended_password in brute_force_extension(password, charset):
-                      sha1_hash = hashlib.sha1(extended_password.encode()).hexdigest()
-                      if hashed_password == sha1_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                else:
-                    for password in transformations:
-                     for extended_password in brute_force_extension(password, charset):
-                      sha256_hash = hashlib.sha256(extended_password.encode()).hexdigest()
-                      if hashed_password == sha256_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-            else:
-                if dernier_bouton_clique == 1:
-                    for password in transformations:
-                      for extended_password in brute_force_extension(password, charset):
-                       md5_hash = md5_crypt.using(salt=salt_hash).hash(extended_password)
-                       if hashed_password == md5_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                elif dernier_bouton_clique==2:
-                    for password in transformations:
-                      for extended_password in brute_force_extension(password, charset):
-                       sha1_hash = sha1_crypt.using(salt=salt_hash,rounds=1).hash(extended_password)
-                       if hashed_password == sha1_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
-                else:
-                    for password in transformations:
-                     for extended_password in brute_force_extension(password, charset):
-                      sha256_hash = sha256_crypt.using(salt=salt_hash,rounds=1000).hash(extended_password)
-                      if hashed_password == sha256_hash:
-                        result_label_aml.config(text=f"Le mot de passe est :", fg=FG_COLOR)
-                        password_label_aml.config(text=password, fg=ACCENT_COLOR)
-                        result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-                        current_frame = result_frame_aml
-                        toggle_back_button(False)
-                        return
+    # Réinitialisation de la barre de progression
+    reset_progress_bar()
 
-    result_label_aml.config(text="Tentative échouée", fg=ACCENT_COLOR)
-    password_label_aml.config(text="")
-    result_frame_aml.place(relx=0.5, rely=0.5, anchor='center')  # Centrer en hauteur et en largeur
-    current_frame = result_frame_aml
+    # Cacher les éléments associés à la barre de progression
+    progress_bar.place_forget()
+    percentage_label.place_forget()
+    blink_label.place_forget()
     toggle_back_button(False)
-    return None
+
+    # Affichage des résultats
+    if result:
+        result_label_hyb.config(text="Le mot de passe est :", fg=FG_COLOR)
+        password_label_hyb.config(text=result, fg=ACCENT_COLOR)
+        result_frame_hyb.place(relx=0.5, rely=0.5, anchor='center') 
+        password_label_hyb.pack(pady=5) 
+        retry_button_hyb.pack(side=tk.LEFT, padx=10)
+        current_frame = result_frame_hyb
         
-                
+    else:
+        result_label_hyb.config(text="Tentative échouée", fg=ACCENT_COLOR)
+        retry_button_hyb.pack(pady=15)
+        
+    toggle_back_button(False)
+          
+def show_hybride_attack():
+    global current_frame,c4
+    hide_all_frames()  # Cacher toutes les frames
+
+    # Afficher l'interface de l'attaque par dictionnaire
+    label_dic_hyb.place(relx=0.5, rely=0.30, anchor='center')
+    entry_dic_hyb.place(relx=0.5, rely=0.4, anchor='center')
+    dic_hyb_title.place(relx=0.5, rely=0.1, anchor="center")
+    crack_dic_hyb_button.place(relx=0.5, rely=0.6, anchor='center')
+    c4 = tk.Checkbutton(main_frame, text='Salt',variable=var4, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt4,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    #c4.place(relx=0.5, rely=0.6, anchor='center')
+    c4.pack(expand=1,pady=10)
+    current_frame = label_dic_hyb
+    toggle_back_button(True)
+
 # Fonction pour tester si un mot correspond au hachage
 def est_bon_mot(mot, hash_a_trouver):
     global dernier_bouton_clique
@@ -770,6 +780,18 @@ def hide_all_frames():
     password_label_aml.config(text="")
     retry_button_aml.pack_forget() 
     entry_dic_aml.delete(0, tk.END)
+    salt_hyb_label.place_forget()
+    entry_hyb_salt.place_forget()
+    bouton_hyb_salt.place_forget()
+    c3.destroy()
+    crack_dic_hyb_button.place_forget()
+    label_dic_hyb.place_forget()
+    entry_dic_hyb.place_forget()
+    result_frame_hyb.place_forget()
+    result_label_hyb.config(text="")
+    password_label_hyb.config(text="")
+    retry_button_hyb.pack_forget() 
+    entry_dic_hyb.delete(0, tk.END)
     
 
 
@@ -804,7 +826,7 @@ def show_dictionary_attack():
 
 # Fonction pour retourner à l'écran précédent
 def return_to_previous_screen():
-    global current_frame,c1,c2,c3
+    global current_frame,c1,c2,c3,c4
     if current_frame == result_frame:
         result_frame.place_forget()
         show_dictionary_attack()
@@ -882,6 +904,20 @@ def return_to_previous_screen():
         c3.destroy()
         current_frame = attack_buttons_frame
         toggle_back_button(True)  # Cacher le bouton "Retour"
+    elif current_frame in (label_dic_hyb, entry_dic_hyb, crack_dic_hyb_button):
+        attack_buttons_frame.place(relx=0.5, rely=0.5, anchor='center')
+        crack_dic_hyb_button.place_forget()
+        entry_dic_hyb.place_forget()
+        label_dic_hyb.place_forget()
+        dic_hyb_title.place_forget()
+        salt_hyb_label.place_forget()
+        entry_hyb_salt.place_forget()
+        bouton_hyb_salt.place_forget()
+        var4.set(0) 
+        c4.place_forget()
+        c4.destroy()
+        current_frame = attack_buttons_frame
+        toggle_back_button(True) 
     elif current_frame==result_frame_test_password:
         label_test_password.place_forget()
         entry_test_password.place_forget()
@@ -1472,6 +1508,17 @@ def retryaml():
     # Réinitialiser l'interface 
     show_dictionaryAmeliore_attack()
 
+def retryhyb():
+    global current_frame
+    hide_all_frames()
+    # Cacher les éléments de la tentative précédente
+    result_frame_hyb.place_forget()
+    result_label_hyb.config(text="")
+    password_label_hyb.config(text="")
+    entry_dic_hyb.delete(0, tk.END)
+    # Réinitialiser l'interface 
+    show_hybride_attack()
+
 # Obtenir la date et l'heure actuelles
 def get_current_datetime():
     now = datetime.now()
@@ -1509,9 +1556,21 @@ def check_salt3():
         bouton_aml_salt.place_forget()
     else:
         crack_dic_aml_button.place_forget()
-        salt_label.place(relx=0.5, rely=0.6, anchor='center') 
+        salt_aml_label.place(relx=0.5, rely=0.6, anchor='center') 
         entry_aml_salt.place(relx=0.5, rely=0.7, anchor='center') 
-        bouton_aml_salt.place(relx=0.5, rely=0.8, anchor='center')           
+        bouton_aml_salt.place(relx=0.5, rely=0.8, anchor='center')
+
+def check_salt4():
+    if var4.get()==0:
+        crack_dic_hyb_button.place(relx=0.5, rely=0.6, anchor='center')
+        salt_hyb_label.place_forget()
+        entry_hyb_salt.place_forget()
+        bouton_hyb_salt.place_forget()
+    else:
+        crack_dic_hyb_button.place_forget()
+        salt_hyb_label.place(relx=0.5, rely=0.6, anchor='center') 
+        entry_hyb_salt.place(relx=0.5, rely=0.7, anchor='center') 
+        bouton_hyb_salt.place(relx=0.5, rely=0.8, anchor='center')            
         
 def salt():
     global current_frame, current_progress, dernier_bouton_clique,c1
@@ -1759,7 +1818,7 @@ rainbow_attack_button.pack(pady=10)
 lookup_table_button = Button(attack_buttons_frame, text="Lookup Table", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR,command=show_lookup_table)
 lookup_table_button.pack(pady=10)
 
-attack_hybride_button = Button(attack_buttons_frame, text="Hybride", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_dictionary_attack)
+attack_hybride_button = Button(attack_buttons_frame, text="Hybride", fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR, command=show_hybride_attack)
 attack_hybride_button.pack(pady=10)
 
 
@@ -1820,17 +1879,32 @@ crack_rainbow_button = Button(main_frame, text="Craquer le mot de passe", comman
 #declaration Dictionnaire Amelioré
 label_dic_aml = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 entry_dic_aml= tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-crack_dic_aml_button = Button(main_frame, text="Craquer le mot de passe", command=dictionary_attack, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+crack_dic_aml_button = Button(main_frame, text="Craquer le mot de passe", command=launch_dic_aml_attack, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 var3 = tk.IntVar()
 c3 = tk.Checkbutton(main_frame, text='Salt',variable=var3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt3,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-#c1.pack()
-#c1.place(relx=0.5, rely=0.6, anchor='center')
-#c1.place_forget()
+#c3.pack()
+#c3.place(relx=0.5, rely=0.6, anchor='center')
+#c3.place_forget()
 salt_aml_label=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 entry_aml_salt=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-bouton_aml_salt= Button(main_frame, text="Cracker le mot de passe", command=salt, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+bouton_aml_salt= Button(main_frame, text="Cracker le mot de passe", command=launch_dic_aml_attack, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 #root.bind("<Return>", lambda event: crack_button.invoke())
 dic_aml_title=tk.Label(main_frame, text="Attaque par dictionnaire Amélioré", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
+
+#declaration Hybride
+label_dic_hyb = tk.Label(main_frame, text="Entrez votre mot de passe haché :", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_dic_hyb= tk.Entry(main_frame, width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+crack_dic_hyb_button = Button(main_frame, text="Craquer le mot de passe", command=launch_hybride_attack, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+var4 = tk.IntVar()
+c4 = tk.Checkbutton(main_frame, text='Salt',variable=var3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_salt4,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+#c4.pack()
+#c4.place(relx=0.5, rely=0.6, anchor='center')
+#c4.place_forget()
+salt_hyb_label=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_hyb_salt=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+bouton_hyb_salt= Button(main_frame, text="Cracker le mot de passe", command=launch_hybride_attack, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+#root.bind("<Return>", lambda event: crack_button.invoke())
+dic_hyb_title=tk.Label(main_frame, text="Attaque hybride", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 
 # Barre de progression
 progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
@@ -1886,6 +1960,15 @@ password_label_aml= tk.Label(result_frame_aml, bg=BG_COLOR, font=custom_font, fg
 password_label_aml.pack(side=tk.LEFT)
 retry_button_aml = Button(result_frame_aml, text="Nouvelle tentative", command=retryaml, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 retry_button_aml.pack(side=tk.LEFT, padx=10)
+
+# Frame pour afficher le résultat et le bouton "Nouvelle tentative" pour l'attaque Dic ameliore
+result_frame_hyb = tk.Frame(main_frame, bg=BG_COLOR)
+result_label_hyb = tk.Label(result_frame_hyb, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
+result_label_hyb.pack(side=tk.LEFT, padx=10)
+password_label_hyb= tk.Label(result_frame_hyb, bg=BG_COLOR, font=custom_font, fg=ACCENT_COLOR)
+password_label_hyb.pack(side=tk.LEFT)
+retry_button_hyb = Button(result_frame_hyb, text="Nouvelle tentative", command=retryhyb, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+retry_button_hyb.pack(side=tk.LEFT, padx=10)
 
 # Label pour afficher la date et l'heure en haut à droite
 date_label = tk.Label(main_frame, text=get_current_datetime(), fg="#00FF00", bg=BG_COLOR, font=("Courier", 12))
