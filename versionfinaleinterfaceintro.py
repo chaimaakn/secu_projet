@@ -593,7 +593,6 @@ def thread_function(password_hash, characters, length, hash_function):
         if password_found:
             return
         
-        print(f"Testing password: {password}") 
 
         password_bytes = password.encode('utf-8')
         
@@ -953,16 +952,31 @@ def return_to_previous_screen():
         toggle_back_button(False) 
     elif current_frame==md5_frame:
         md5_frame.place_forget()
+        entry_md5.place_forget()
+        label_md5.place_forget()
+        label_result_md5.place_forget()
+        md5_search_button.place_forget()
+        label_copie.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
         toggle_back_button(True) 
     elif current_frame==sha1_frame:
         sha1_frame.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
+        entry_sha1.place_forget()
+        label_sha1.place_forget()
+        label_result_sha1.place_forget()
+        sha1_search_button.place_forget()
+        label_copie_sha1.place_forget()
         current_frame = convertisseur_frame
         toggle_back_button(True) 
     elif current_frame==sha256_frame:
         sha256_frame.place_forget()
+        entry_sha256.place_forget()
+        label_sha256.place_forget()
+        label_result_sha256.place_forget()
+        sha256_search_button.place_forget()
+        label_copie_sha256.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
         toggle_back_button(True) 
@@ -2074,27 +2088,24 @@ advice_text = """
 advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE), wraplength=450, justify="left")
 #déclaration des frames du convertisseur:
 md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
-entry_md5=tk.Entry(md5_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-entry_md5.place(relx=0.5, rely=0.4, anchor='center')
-label_md5=tk.Label(md5_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-label_md5.place(relx=0.5, rely=0.3, anchor='center')
-label_result_md5=tk.Label(md5_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-md5_search_button=Button(md5_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
-md5_search_button.place(relx=0.5, rely=0.48, anchor='center')
-label_copie=tk.Label(md5_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
+entry_md5=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+label_md5=tk.Label(main_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_result_md5=tk.Label(main_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+md5_search_button=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
+label_copie=tk.Label(main_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
 sha1_frame= tk.Frame(main_frame, bg=BG_COLOR)
-entry_sha1=tk.Entry(sha1_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font,highlightthickness=0.5)
-label_sha1=tk.Label(sha1_frame, text="entrez le mot que vous voulez haché en sha1", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-label_result_sha1=tk.Label(sha1_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-sha1_search_button=Button(sha1_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha1_function)
-label_copie_sha1=tk.Label(sha1_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
+entry_sha1=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font,highlightthickness=0.5)
+label_sha1=tk.Label(main_frame, text="entrez le mot que vous voulez haché en sha1", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_result_sha1=tk.Label(main_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+sha1_search_button=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha1_function)
+label_copie_sha1=tk.Label(main_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
 
 sha256_frame= tk.Frame(main_frame, bg=BG_COLOR)
-entry_sha256=tk.Entry(sha256_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-label_sha256=tk.Label(sha256_frame, text="entrez le mot que vous voulez haché en sha256", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-label_result_sha256=tk.Label(sha256_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
-sha256_search_button=Button(sha256_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha256_function)
-label_copie_sha256=tk.Label(sha256_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
+entry_sha256=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font,highlightthickness=0.5)
+label_sha256=tk.Label(main_frame, text="entrez le mot que vous voulez haché en sha256", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+label_result_sha256=tk.Label(main_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+sha256_search_button=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha256_function)
+label_copie_sha256=tk.Label(main_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
 
 toggle_back_button(False)
 
