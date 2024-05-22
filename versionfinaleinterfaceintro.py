@@ -27,6 +27,8 @@ import concurrent.futures
 import threading
 import os
 import pygame
+import math
+import concurrent.futures
 
 # Couleurs
 BG_COLOR = "#000000"
@@ -1339,29 +1341,29 @@ def test_password():
         result_label_test_password.config(text="Veuillez entrer un mot de passe.", fg=ACCENT_COLOR)
     else:
         # Vérifier la longueur du mot de passe
-        if len(password) < 12:
-            result_label_test_password.config(text="Votre mot de passe est trop court.\n Il doit contenir au moins 12 caractères.", fg=ACCENT_COLOR)
-        else:
-            # Vérifier la présence de majuscules
-            if not any(char.isupper() for char in password):
-                result_label_test_password.config(text="Votre mot de passe doit contenir \n au moins une majuscule.", fg=ACCENT_COLOR)
-            else:
-                # Vérifier la présence de caractères spéciaux
-                special_chars = string.punctuation
-                if not any(char in special_chars for char in password):
-                    result_label_test_password.config(text="Votre mot de passe doit contenir \n au moins un caractère spécial.", fg=ACCENT_COLOR)
+        hashed_password = md5(password)
+        with open("password_dict.pkl", "rb") as file:
+            password_dict = pickle.load(file)
+            if hashed_password in password_dict:
+                result_label_test_password.config(text="Votre mot de passe est considéré comme faible (trop commun).\nEstimation du temps nécessaire pour trouver le mot de passe au pire cas:\n"+"instantané"+"\n(avec seulement brutforce ou dictionnaire)", fg=ACCENT_COLOR)
+            else:    
+                if len(password) < 12:
+                    result_label_test_password.config(text="Votre mot de passe est trop court.\n Il doit contenir au moins 12 caractères.\nEstimation du temps nécessaire pour trouver le mot de passe au pire cas:\n"+format_time(estimate_total_time(len(password),1))+"\n(avec seulement brutforce ou dictionnaire)", fg=ACCENT_COLOR)
                 else:
-                 numero=string.digits
-                 if not any(char in numero for char in password):
-                    result_label_test_password.config(text="Votre mot de passe doit contenir \n au moins un chiffre.",fg=ACCENT_COLOR)
-                 else:
-                    hashed_password = md5(password)
-                    with open("password_dict.pkl", "rb") as file:
-                        password_dict = pickle.load(file)
-                    if hashed_password in password_dict:
-                        result_label_test_password.config(text="Votre mot de passe est considéré comme faible.", fg=ACCENT_COLOR)
+                    # Vérifier la présence de majuscules
+                    if not any(char.isupper() for char in password):
+                        result_label_test_password.config(text="Votre mot de passe doit contenir \n au moins une majuscule.\nEstimation du temps nécessaire pour trouver le mot de passe au pire cas:\n"+format_time(estimate_total_time(len(password),1))+"\n(avec seulement brutforce ou dictionnaire)", fg=ACCENT_COLOR)
                     else:
-                        result_label_test_password.config(text="Votre mot de passe est considéré comme sûr.", fg=FG_COLOR)
+                        # Vérifier la présence de caractères spéciaux
+                        special_chars = string.punctuation
+                        if not any(char in special_chars for char in password):
+                            result_label_test_password.config(text="Votre mot de passe doit contenir \n au moins un caractère spécial.\nEstimation du temps nécessaire pour trouver le mot de passe au pire cas:\n"+format_time(estimate_total_time(len(password),2))+"\n(avec seulement brutforce ou dictionnaire)", fg=ACCENT_COLOR)
+                        else:
+                            numero=string.digits
+                            if not any(char in numero for char in password):
+                                result_label_test_password.config(text="Votre mot de passe doit contenir \n au moins un chiffre.\nEstimation du temps nécessaire pour trouver le mot de passe au pire cas au pire cas:\n"+format_time(estimate_total_time(len(password),4))+"\n(avec seulement brutforce ou dictionnaire)",fg=ACCENT_COLOR)
+                            else:
+                                result_label_test_password.config(text="Votre mot de passe est considéré comme sûr.\nEstimation du temps nécessaire pour trouver le mot de passe au pire cas:\n"+format_time(estimate_total_time(len(password),1))+"\n(avec seulement brutforce ou dictionnaire)", fg=FG_COLOR)
 
     reset_button_test_password.pack(side=tk.LEFT, padx=10)  # Afficher le bouton "Réinitialiser"
     current_frame = result_frame_test_password
@@ -1672,10 +1674,50 @@ def salt():
         
 def salt2():
     retrouver_mot()
-
     
+
+THREAD_COUNT = 8  # MacBook Pro M1 a 8 cœurs
+
+def calculate_combinations(length,n):
+    if n==1:
+    # Constantes
+        CHARACTERS = string.ascii_letters + string.digits + string.punctuation
+    elif n==2:
+        CHARACTERS = string.ascii_letters + string.digits 
+    elif n==4:
+        CHARACTERS = string.ascii_letters + string.punctuation    
+    elif n==5:
+        CHARACTERS = string.digits + string.punctuation
+    elif n==6:
+        CHARACTERS = string.ascii_letters 
+    elif n==7:
+        CHARACTERS = string.digits
+    elif n==8:       
+        CHARACTERS = string.punctuation    
+    return math.pow(len(CHARACTERS), length)
+
+def estimate_time_per_thread(combinations):
+    # Estimation de la vitesse de calcul en mots de passe/seconde par thread
+    # Cela dépendra fortement de la puissance de calcul réelle du système
+    # Vous devrez peut-être ajuster cette valeur en fonction de vos tests
+    passwords_per_second = 1000000  # Exemple: 1 million de mots de passe/s par thread (à ajuster)
+    return combinations / passwords_per_second
+
+def estimate_total_time(password_length,n):
+    total_time_seconds = 0
+    for length in range(1, password_length + 1):
+        combinations = calculate_combinations(length,n)
+        time_per_thread = estimate_time_per_thread(combinations)
+        total_time_seconds += time_per_thread
+    return total_time_seconds
+
+def format_time(seconds):
+    days, remainder = divmod(seconds, 60*60*24)
+    hours, remainder = divmod(remainder, 60*60)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{days:.0f} jours, {hours:.0f} heures, {minutes:.0f} minutes, {seconds:.0f} secondes"
+  
    
-            
 # Configuration de la fenêtre principale
 window_width=1400
 window_height=788
@@ -1930,7 +1972,7 @@ bouton_hyb_salt= Button(main_frame, text="Cracker le mot de passe", command=laun
 dic_hyb_title=tk.Label(main_frame, text="Attaque hybride", fg=ACCENT_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE, "bold"))
 
 # Barre de progression
-progress_bar = ttk.Progressbar(main_frame, length=400, mode="determinate", style="Custom.Horizontal.TProgressbar")
+progress_bar = ttk.Progressbar(main_frame, length=800, mode="determinate", style="Custom.Horizontal.TProgressbar")
 
 # Label pour afficher le pourcentage
 percentage_label = tk.Label(main_frame, bg=BG_COLOR, font=custom_font, fg=FG_COLOR)
