@@ -603,20 +603,22 @@ def thread_function(password_hash, characters, length, hash_function):
                     return
 
 # Hash function selector based on button click
+
 def get_hash_function(dernier_bouton_clique,var2,salt_hash):
     
     
     if var2.get()==1:
-        if dernier_bouton_clique==1:
-             return lambda password_bytes: md5_crypt.using(salt=salt_hash).hash(password_bytes)
+        if dernier_bouton_clique == 3:
+             return lambda password_bytes: sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password_bytes) 
+             
         elif dernier_bouton_clique==2:
           return lambda password_bytes: sha1_crypt.using(salt=salt_hash).hash(password_bytes)
         else:
-           return lambda password_bytes: sha256_crypt.using(salt=salt_hash,round=1000).hash(password_bytes) 
+           return lambda password_bytes: md5_crypt.using(salt=salt_hash).hash(password_bytes) 
     else:
-        if dernier_bouton_clique==1:
+        if dernier_bouton_clique == 1:
            return lambda password_bytes: hashlib.md5(password_bytes).hexdigest()
-        elif dernier_bouton_clique==2:
+        elif dernier_bouton_clique == 2:
             return lambda password_bytes: hashlib.sha1(password_bytes).hexdigest()
         else:
             return lambda password_bytes: hashlib.sha256(password_bytes,round=1000).hexdigest()
