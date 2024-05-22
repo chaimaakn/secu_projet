@@ -1409,9 +1409,8 @@ def show_interface_md5():
     md5_frame.place(relx=0.5, rely=0.5, anchor="center", width=500, height=400)
     label_md5.place(relx=0.5, rely=0.3, anchor='center')
     entry_md5.place(relx=0.5, rely=0.4, anchor='center')
-    md5_search_button.place(relx=0.5, rely=0.55, anchor='center')
-    c5 = tk.Checkbutton(main_frame, text='Salt',variable=var5, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-    c5.pack(expand=1,pady=10)
+    md5_search_button.place(relx=0.5, rely=0.5, anchor='center')
+    
     
     current_frame=md5_frame
     toggle_back_button(True)
