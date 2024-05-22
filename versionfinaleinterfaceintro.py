@@ -574,8 +574,6 @@ def est_bon_mot(mot, hash_a_trouver):
             return sha256(mot) == hash_a_trouver
     
     
-
-    
 password_found = False
 password_lock = threading.Lock()
 le_bon_MotDePasse = None  
@@ -593,6 +591,7 @@ def thread_function(password_hash, characters, length, hash_function):
         if password_found:
             return
         
+    
 
         password_bytes = password.encode('utf-8')
         
@@ -605,23 +604,25 @@ def thread_function(password_hash, characters, length, hash_function):
                     return
 
 # Hash function selector based on button click
+
 def get_hash_function(dernier_bouton_clique,var2,salt_hash):
     
     
     if var2.get()==1:
-        if dernier_bouton_clique==1:
-             return lambda password_bytes: md5_crypt.using(salt=salt_hash).hash(password_bytes)
+        if dernier_bouton_clique == 3:
+             return lambda password_bytes: sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password_bytes) 
+             
         elif dernier_bouton_clique==2:
           return lambda password_bytes: sha1_crypt.using(salt=salt_hash).hash(password_bytes)
         else:
-           return lambda password_bytes: sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password_bytes) 
+           return lambda password_bytes: md5_crypt.using(salt=salt_hash).hash(password_bytes) 
     else:
-        if dernier_bouton_clique==1:
+        if dernier_bouton_clique == 1:
            return lambda password_bytes: hashlib.md5(password_bytes).hexdigest()
-        elif dernier_bouton_clique==2:
+        elif dernier_bouton_clique == 2:
             return lambda password_bytes: hashlib.sha1(password_bytes).hexdigest()
         else:
-            return lambda password_bytes: hashlib.sha256(password_bytes).hexdigest()
+            return lambda password_bytes: hashlib.sha256(password_bytes,round=1000).hexdigest()
 
 
 
@@ -693,6 +694,7 @@ def retrouver_mot():
     else:
         messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
 
+        
         
         
 def show_brute_force_interface():
