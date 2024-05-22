@@ -13,7 +13,6 @@ def load_password_list(filename):
 def apply_transformations(base_password):
     """Applique différentes transformations sur un mot de base."""
     transformations = [
-        base_password,
         base_password.upper(),
         base_password.lower(),
         base_password.capitalize(),
@@ -33,6 +32,12 @@ def brute_force_extension(base_password, charset, max_length=2):
 def hybrid_attack(target_hash, filename, charset="0123456789!@#"):
     """Effectue une attaque hybride sur le hash cible."""
     password_list = load_password_list(filename)
+
+    for base_password in password_list:
+        if generate_hash(base_password) == target_hash:
+                print(f"Mot de passe trouvé : {base_password}")
+                return base_password
+            
     for base_password in password_list:
         # Appliquer les transformations simples
         transformations = apply_transformations(base_password)
@@ -52,7 +57,7 @@ def hybrid_attack(target_hash, filename, charset="0123456789!@#"):
     return None
 
 # Exemple d'utilisation
-target_password = "secret123!!!"
+target_password = "qwerty12301"
 target_hash = generate_hash(target_password)  # Simuler un hash cible
 filename = 'liste.txt'  # Nom du fichier contenant les mots de base
 
