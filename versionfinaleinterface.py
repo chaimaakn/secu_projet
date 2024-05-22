@@ -565,109 +565,100 @@ def est_bon_mot(mot, hash_a_trouver):
 password_found = False
 password_lock = threading.Lock()
 le_bon_MotDePasse = None       
+# Function to generate passwords
 def generate_passwords(characters, length):
     for combination in itertools.product(characters, repeat=length):
         yield ''.join(combination)
 
-def thread_function(password_hash, characters, length):
+# Function to test each password
+def thread_function(password_hash, characters, length, hash_function):
     global password_found
     global le_bon_MotDePasse
 
     for password in generate_passwords(characters, length):
         if password_found:
             return
+        
+        print(f"Testing password: {password}") 
 
         password_bytes = password.encode('utf-8')
-        if dernier_bouton_clique==1:
-                 password_md5 = hashlib.md5(password_bytes).hexdigest()
-                 if password_md5 == password_hash:
-                   with password_lock:
-                    if not password_found:
-                       password_found = True
-                       le_bon_MotDePasse = password
-                    
-                   return 
-                 
-        elif dernier_bouton_clique==2:
-                password_sha1 = hashlib.sha1(password_bytes).hexdigest()
-                if password_sha1 == password_hash:
-                 with password_lock:
-                    if not password_found:
-                      password_found = True
-                      le_bon_MotDePasse = password
-                    
-                    return 
-        else:
-                password_sha256 = hashlib.sha256(password_bytes).hexdigest()
-                if password_sha256 == password_hash:
-                 with password_lock:
-                    if not password_found:
-                      password_found = True
-                      le_bon_MotDePasse = password
-                    
-                    return 
+        generated_hash = hash_function(password_bytes)
 
+        if generated_hash == password_hash:
+            with password_lock:
+                if not password_found:
+                    password_found = True
+                    le_bon_MotDePasse = password
+            return
 
-
-     
+# Hash function selector based on button click
+def get_hash_function(dernier_bouton_clique):
+    if dernier_bouton_clique == 1:
+        return lambda password_bytes: hashlib.md5(password_bytes).hexdigest()
+    elif dernier_bouton_clique == 2:
+        return lambda password_bytes: hashlib.sha1(password_bytes).hexdigest()
+    else:
+        return lambda password_bytes: hashlib.sha256(password_bytes).hexdigest()
 
 # Main brute force function
-def brute_force_password(password_hash, max_length=12, num_threads=None):
+def brute_force_password(password_hash, dernier_bouton_clique, max_length=12, num_threads=None):
+    global password_found
     global le_bon_MotDePasse
 
-    # Limiting to alphanumeric characters for better performance
-    characters = string.ascii_letters + string.digits+ string.punctuation
+    # Reset the global variables
+    password_found = False
+    le_bon_MotDePasse = None
+
+    characters = string.ascii_letters + string.digits + string.punctuation
+    hash_function = get_hash_function(dernier_bouton_clique)
+
     if num_threads is None:
-        num_threads = min(24, os.cpu_count() * 2)  # Use up to 24 threads or twice the number of CPU cores
+        num_threads = min(24, os.cpu_count() * 2)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         futures = []
         for length in range(1, max_length + 1):
-            futures.append(executor.submit(thread_function, password_hash, characters, length))
+            futures.append(executor.submit(thread_function, password_hash, characters, length, hash_function))
 
         for future in concurrent.futures.as_completed(futures):
             if password_found:
                 break
 
-    if le_bon_MotDePasse:
-        print("Mot de passe trouvé !")
-        print("Le bon mot de passe est :", le_bon_MotDePasse)
-    else:
-        print("Mot de passe non trouvé.")
+    return le_bon_MotDePasse
 
-# Fonction pour permettre à l'utilisateur d'entrer un hash et récupérer le mot correspondant
+# Function to retrieve password based on hash input
 def retrouver_mot():
-    global le_bon_MotDePasse
+    global dernier_bouton_clique
 
     hash_input = entry_brut_force.get().strip()
-    if var2.get()==1:
-        salt_hash=entry_salt2.get().strip()
-        if messagebox_salt(salt_hash)== True:
+    if var2.get() == 1:
+        salt_hash = entry_salt2.get().strip()
+        if messagebox_salt(salt_hash):
             return
-        if dernier_bouton_clique==1:
-            if message_box_md5_crypt(hash_input)==True:
-               return
-            hash_input="$1$"+salt_hash+"$"+hash_input
-        elif dernier_bouton_clique==2:
-            if message_box_sha1_crypt(hash_input)==True:
-               return
-            hash_input="$sha1$1$"+salt_hash+"$"+hash_input
-        else: 
-            if message_box_sha256_crypt(hash_input)==True:
-              return
-            hash_input="$5$rounds=1000$"+salt_hash+"$"+hash_input
-    else:
-        if dernier_bouton_clique==1:
-            if message_box_md5(hash_input)==True:
+        if dernier_bouton_clique == 1:
+            if message_box_md5_crypt(hash_input):
                 return
-        elif dernier_bouton_clique==2:
-             if message_box_sha1(hash_input)==True:
+            hash_input = "$1$" + salt_hash + "$" + hash_input
+        elif dernier_bouton_clique == 2:
+            if message_box_sha1_crypt(hash_input):
+                return
+            hash_input = "$sha1$1$" + salt_hash + "$" + hash_input
+        else:
+            if message_box_sha256_crypt(hash_input):
+                return
+            hash_input = "$5$rounds=1000$" + salt_hash + "$" + hash_input
+    else:
+        if dernier_bouton_clique == 1:
+            if message_box_md5(hash_input):
+                return
+        elif dernier_bouton_clique == 2:
+            if message_box_sha1(hash_input):
                 return
         else:
-            if message_box_sha256(hash_input)==True:
+            if message_box_sha256(hash_input):
                 return
 
-    brute_force_password(hash_input)  # Appel de la fonction brute_force_password avec le hash fourni
+    le_bon_MotDePasse = brute_force_password(hash_input, dernier_bouton_clique)  # Call the brute_force_password function with the provided hash and method
 
     if le_bon_MotDePasse:
         retry_button_brute_force.pack(side=tk.LEFT, padx=10)
@@ -675,8 +666,6 @@ def retrouver_mot():
         toggle_back_button(False)
     else:
         messagebox.showinfo("Information", "Aucun mot n'a été trouvé.")
-
-
 def show_brute_force_interface():
     global entry_brut_force 
     global current_frame
