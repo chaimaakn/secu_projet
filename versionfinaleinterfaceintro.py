@@ -614,7 +614,7 @@ def get_hash_function(dernier_bouton_clique,var2,salt_hash):
         elif dernier_bouton_clique==2:
           return lambda password_bytes: sha1_crypt.using(salt=salt_hash).hash(password_bytes)
         else:
-           return lambda password_bytes: sha256_crypt.using(salt=salt_hash,round=1000).hash(password_bytes) 
+           return lambda password_bytes: sha256_crypt.using(salt=salt_hash,rounds=1000).hash(password_bytes) 
     else:
         if dernier_bouton_clique==1:
            return lambda password_bytes: hashlib.md5(password_bytes).hexdigest()
