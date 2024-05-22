@@ -622,7 +622,7 @@ def get_hash_function(dernier_bouton_clique,var2,salt_hash):
         elif dernier_bouton_clique == 2:
             return lambda password_bytes: hashlib.sha1(password_bytes).hexdigest()
         else:
-            return lambda password_bytes: hashlib.sha256(password_bytes,round=1000).hexdigest()
+            return lambda password_bytes: hashlib.sha256(password_bytes).hexdigest()
 
 
 
@@ -796,7 +796,19 @@ def hide_all_frames():
     password_label_hyb.config(text="")
     retry_button_hyb.pack_forget() 
     entry_dic_hyb.delete(0, tk.END)
-    c5.destroy()
+    #c5.destroy()
+    salt_label_con1.place_forget()
+    entry_salt_con1.place_forget()
+    bouton_salt_con1.place_forget()
+    cc1.destroy()
+    salt_label_con2.place_forget()
+    entry_salt_con2.place_forget()
+    bouton_salt_con2.place_forget()
+    cc2.destroy()
+    salt_label_con3.place_forget()
+    entry_salt_con3.place_forget()
+    bouton_salt_con3.place_forget()
+    cc3.destroy()
 
     
 
@@ -963,9 +975,15 @@ def return_to_previous_screen():
         label_copie.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
         current_frame = convertisseur_frame
-        var5.set(0) 
+        '''var5.set(0) 
         c5.place_forget()
-        c5.destroy()
+        c5.destroy()'''
+        salt_label_con1.place_forget()
+        entry_salt_con1.place_forget()
+        bouton_salt_con1.place_forget()
+        varc1.set(0)
+        cc1.place_forget()
+        cc1.destroy()
         toggle_back_button(True) 
     elif current_frame==sha1_frame:
         sha1_frame.place_forget()
@@ -975,6 +993,12 @@ def return_to_previous_screen():
         label_result_sha1.place_forget()
         sha1_search_button.place_forget()
         label_copie_sha1.place_forget()
+        salt_label_con2.place_forget()
+        entry_salt_con2.place_forget()
+        bouton_salt_con2.place_forget()
+        varc2.set(0)
+        cc2.place_forget()
+        cc2.destroy()
         current_frame = convertisseur_frame
         toggle_back_button(True) 
     elif current_frame==sha256_frame:
@@ -985,6 +1009,12 @@ def return_to_previous_screen():
         sha256_search_button.place_forget()
         label_copie_sha256.place_forget()
         convertisseur_frame.place(relx=0.5, rely=0.5, anchor='center')
+        salt_label_con3.place_forget()
+        entry_salt_con3.place_forget()
+        bouton_salt_con3.place_forget()
+        varc3.set(0)
+        cc3.place_forget()
+        cc3.destroy()
         current_frame = convertisseur_frame
         toggle_back_button(True) 
     elif current_frame == button_frame:
@@ -1410,8 +1440,10 @@ def show_interface_md5():
     label_md5.place(relx=0.5, rely=0.3, anchor='center')
     entry_md5.place(relx=0.5, rely=0.4, anchor='center')
     md5_search_button.place(relx=0.5, rely=0.55, anchor='center')
-    c5 = tk.Checkbutton(main_frame, text='Salt',variable=var5, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
-    c5.pack(expand=1,pady=10)
+    '''c5 = tk.Checkbutton(main_frame, text='Salt',variable=var5, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    c5.pack(expand=1,pady=10)'''
+    cc1 = tk.Checkbutton(main_frame, text='Salt',variable=varc1, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_saltc1,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    cc1.pack(expand=1,pady=10)
     
     current_frame=md5_frame
     toggle_back_button(True)
@@ -1447,10 +1479,23 @@ def show_interface_sha1():
     label_sha1.place(relx=0.5, rely=0.3, anchor='center')
     entry_sha1.place(relx=0.5, rely=0.4, anchor='center')
     sha1_search_button.place(relx=0.5, rely=0.48, anchor='center')
+    cc2 = tk.Checkbutton(main_frame, text='Salt',variable=varc2, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_saltc1,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    cc2.pack(expand=1,pady=10)
     current_frame=sha1_frame
     toggle_back_button(True)
     
 def sha1_function():
+    global current_frame
+    
+    password=entry_sha1.get().strip()
+    label_result_sha1.config(text="Hachage sha1:\n"+sha1(password))
+    label_result_sha1.place(relx=0.5,rely=0.6,anchor='center')
+    pyperclip.copy(sha1(password))
+    label_copie_sha1.place(relx=0.5,rely=0.8,anchor='center')
+    current_frame=sha1_frame
+    toggle_back_button(True)
+
+def sha1_function_salt():
     global current_frame
     
     password=entry_sha1.get().strip()
@@ -1469,10 +1514,23 @@ def show_interface_sha256():
     label_sha256.place(relx=0.5, rely=0.3, anchor='center')
     entry_sha256.place(relx=0.5, rely=0.4, anchor='center')
     sha256_search_button.place(relx=0.5, rely=0.48, anchor='center')
+    cc3 = tk.Checkbutton(main_frame, text='Salt',variable=varc3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_saltc1,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+    cc3.pack(expand=1,pady=10)
     current_frame=sha256_frame
     toggle_back_button(True)
     
 def sha256_function():
+    global current_frame
+    
+    password=entry_sha256.get().strip()
+    label_result_sha256.config(text="Hachage sha256:\n"+sha256(password))
+    label_result_sha256.place(relx=0.5,rely=0.6,anchor='center')
+    pyperclip.copy(sha256(password))
+    label_copie_sha256.place(relx=0.5,rely=0.8,anchor='center')
+    current_frame=sha256_frame
+    toggle_back_button(True)
+
+def sha256_function_salt():
     global current_frame
     
     password=entry_sha256.get().strip()
@@ -1609,8 +1667,44 @@ def check_salt4():
         salt_hyb_label.place(relx=0.5, rely=0.6, anchor='center') 
         entry_hyb_salt.place(relx=0.5, rely=0.7, anchor='center') 
         bouton_hyb_salt.place(relx=0.5, rely=0.8, anchor='center')    
-                
-def md5_salt():
+
+def check_saltc1():
+    if varc1.get()==0:
+        md5_search_button.place(relx=0.5, rely=0.6, anchor='center')
+        salt_label_con1.place_forget()
+        entry_salt_con1.place_forget()
+        bouton_salt_con1.place_forget()
+    else:
+        md5_search_button.place_forget()
+        salt_label_con1.place(relx=0.5, rely=0.6, anchor='center') 
+        entry_salt_con1.place(relx=0.5, rely=0.7, anchor='center') 
+        bouton_salt_con1.place(relx=0.5, rely=0.8, anchor='center')  
+
+def check_saltc2():
+    if varc2.get()==0:
+        sha1_search_button.place(relx=0.5, rely=0.6, anchor='center')
+        salt_label_con2.place_forget()
+        entry_salt_con2.place_forget()
+        bouton_salt_con2.place_forget()
+    else:
+        sha1_search_button.place_forget()
+        salt_label_con2.place(relx=0.5, rely=0.6, anchor='center') 
+        entry_salt_con2.place(relx=0.5, rely=0.7, anchor='center') 
+        bouton_salt_con2.place(relx=0.5, rely=0.8, anchor='center') 
+
+def check_saltc3():
+    if varc3.get()==0:
+        sha256_search_button.place(relx=0.5, rely=0.6, anchor='center')
+        salt_label_con3.place_forget()
+        entry_salt_con3.place_forget()
+        bouton_salt_con3.place_forget()
+    else:
+        sha256_search_button.place_forget()
+        salt_label_con3.place(relx=0.5, rely=0.6, anchor='center') 
+        entry_salt_con3.place(relx=0.5, rely=0.7, anchor='center') 
+        bouton_salt_con3.place(relx=0.5, rely=0.8, anchor='center')            
+                       
+'''def md5_salt():
     if var5.get()==0:
         md5_search_button.place(relx=0.5, rely=0.55, anchor='center')
         entry_md5_salt.place_forget()
@@ -1620,7 +1714,7 @@ def md5_salt():
         entry_md5_salt.place(relx=0.5, rely=0.55, anchor='center')
         md5_search_button_salt.place(relx=0.5, rely=0.65, anchor='center')
     x=1        
-    
+    '''
     
     
 def salt():
@@ -2122,10 +2216,10 @@ advice_text = """
 advice_label = tk.Label(advice_frame, text=advice_text, fg=FG_COLOR, bg=BG_COLOR, font=(FONT_FAMILY, FONT_SIZE), wraplength=450, justify="left")
 #déclaration des frames du convertisseur:
 md5_frame= tk.Frame(main_frame, bg=BG_COLOR)
-var5 = tk.IntVar()
-c5 = tk.Checkbutton(main_frame, text='Salt',variable=var3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+'''var5 = tk.IntVar()
+c5 = tk.Checkbutton(main_frame, text='Salt',variable=var5, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=md5_salt,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)'''
 entry_md5=tk.Entry(main_frame,width=40, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
-entry_md5_salt=tk.Entry(main_frame,width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+#entry_md5_salt=tk.Entry(main_frame,width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
 label_md5=tk.Label(main_frame, text="entrez le mot que vous voulez haché en md5", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 label_result_md5=tk.Label(main_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 md5_search_button=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=md5_function)
@@ -2144,7 +2238,21 @@ label_sha256=tk.Label(main_frame, text="entrez le mot que vous voulez haché en 
 label_result_sha256=tk.Label(main_frame, text="", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
 sha256_search_button=Button(main_frame,text="Lancer",fg=FG_COLOR,bg=BUTTON_COLOR,font=custom_font, activeforeground=ACCENT_COLOR,command=sha256_function)
 label_copie_sha256=tk.Label(main_frame,text="(hash copié)",fg=FG_COLOR,bg=BG_COLOR,font=FONT_FAMILY)
-
+varc1 = tk.IntVar()
+cc1 = tk.Checkbutton(main_frame, text='Salt',variable=varc1, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_saltc1,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+salt_label_con1=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_salt_con1=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+bouton_salt_con1= Button(main_frame, text="Lancer", command=md5_function_salt, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+varc2 = tk.IntVar()
+cc2 = tk.Checkbutton(main_frame, text='Salt',variable=varc2, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_saltc2,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+salt_label_con2=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_salt_con2=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+bouton_salt_con2= Button(main_frame, text="Lancer", command=sha1_function_salt, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+varc3 = tk.IntVar()
+cc3 = tk.Checkbutton(main_frame, text='Salt',variable=varc3, onvalue=1, offvalue=0,selectcolor=ACCENT_COLOR, command=check_saltc3,fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
+salt_label_con3=tk.Label(main_frame, text="Entrez le salt:", fg=FG_COLOR, bg=BG_COLOR, font=custom_font)
+entry_salt_con3=tk.Entry(main_frame, width=20, fg=FG_COLOR, bg=BG_COLOR, font=custom_font, highlightthickness=0.5)
+bouton_salt_con3= Button(main_frame, text="Lancer", command=sha256_function_salt, fg=FG_COLOR, bg=BUTTON_COLOR, font=custom_font, activeforeground=ACCENT_COLOR)
 toggle_back_button(False)
 
 '''root.bind_class("Entry", "<Control-c>", handle_shortcuts)
