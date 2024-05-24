@@ -66,5 +66,6 @@ L'INTERFACE GRAPHIQUE:
                                           rainbow : show_rainbow_attack_interface
                                           lookup : show_lookup_table
                                  => pour afficher le resultat de l'attaque une frame est utilisé (result_frame)
-         
 
+PS:
+la version finale du code se trouve dans le fichier : versionfinalePSW.py
