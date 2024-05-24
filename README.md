@@ -1,15 +1,16 @@
 # secu_projet
-projet sécurité
+projet sécurité présenté par l'équipe N°6 bonne lecture ;)
 
 LE CONTENUE DU CODE:
 
 MENU:
-     ATTAQUE : Dans ce code 4 attaques sont implémentées l'attaque par dictionnaire, brute force, par rainbow table et par lookup table.
+     ATTAQUE : Dans ce code 6 attaques sont implémentées l'attaque par dictionnaire, brute force, par rainbow table , par lookup table,Hybride et dictionnaire amélioré.
      CONSEIL : Pour un mot de passe sécurisé
-     TESTER MOT DE PASSE : Ce qui manque et doit etre rajouté au mot de passe entré par l'utilisateur
-     CONVERTISEUR : Donne le hachage d'un mot de passe entré
+     TESTER MOT DE PASSE : Cette option donne des conseils personnalisés a l'utilisateur pour ameliorer son mot de passe ,elle est d'auter aussi d'une option qui prédit le temps nécaissaire pour le qu'elle votre 
+     mot de passe serra trouvé 
+     CONVERTISEUR : Donne le hachage d'un mot de passe entré(en sachant que les mot de passe sont stocké sous cette forme)
 
-Deux fonctions de hachages sont utilisées de la bibliothèque Python hashlib (MD5, SHA1) pour chacune des attaques.
+Deux fonctions de hachages sont utilisées de la bibliothèque Python hashlib (MD5, SHA1,SHA256),En plus de la bibliothéque passlib qui comporte la forme crypté des 3 méthodes de hachage sité (Kali linux utilise cette forme de hachage ) pour chacune des attaques.
 
 LA FONCTION DE CHAQUE ATTAQUE:
 
@@ -18,10 +19,10 @@ LA FONCTION DE CHAQUE ATTAQUE:
 
    brute force : trouver_bon_mot()
                  jusqu'à 12 caractères 
-                 solution pour la rapidité: les threads 
+                 solution pour la rapidité: les threads (max 24 threads modulable a partir de la capacité de chaque pc).
 
    arc-en-ciel : find_password()
-                 fichier : hash_table.txt 'pour MD5' hash_table_sha1.txt 'pour sha1' 
+                 fichier : hash_table.txt 'pour MD5' hash_table_sha1.txt 'pour sha1' hash_table_sha256.
                  code de création de la table : testtes.py
                  les deux tables créées  à partir du dictionnaire liste.txt 
                  problemme de temps, solution : threads
@@ -39,7 +40,7 @@ SELAGE:
    Checkbutton géré avec la variable var1 'pour dictionnaire' et var2 'pour brute force'
 
    SI Checkbutton alors 
-       HACHAGE utilisé MD5_CRYPT ou SHA1_CRYPT de la bibliothèque passlib selon la fonction choisie
+       HACHAGE utilisé MD5_CRYPT ou SHA1_CRYPT SHA256_CRYPT avec un round de 1000 de la bibliothèque passlib selon la fonction choisie
        SALT = salt valide 
    SINON HACHAGE base 16 cad implémentés auparavant 
 
